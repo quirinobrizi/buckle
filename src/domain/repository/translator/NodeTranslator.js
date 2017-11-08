@@ -19,23 +19,34 @@
 const Node = require('../../model/Node');
 
 module.exports = class NodeTranslator {
-    constructor() {
 
+    constructor() {
     }
 
     translate(node) {
         if(!node) {
             return null;
         }
-        var answer = new Node(node.ID)
-            .setIp(node.Status.Addr || node.IP)
-            .setName(node.Spec.Name || node.Name)
-            .setRole(node.Spec.Role)
-            .setDaemonAddress(node.Addr)
-            .setNumberOfCpu(node.Cpus)
-            .setMemory(node.Memory);
-        for(let key in node.Labels) {
-            answer.addProperty(key, node.Labels[key]);
+        var answer;
+        if(node.Spec) {
+            answer = new Node(node.ID)
+                .setIp(node.Status.Addr)
+                .setName(node.Spec.Name)
+                .setRole(node.Spec.Role)
+                .setMaxCpuQuota(node.Description.Resources.NanoCPUs)
+                .setMemory(node.Description.Resources.MemoryBytes);
+        } else {
+            answer = new Node(node.ID)
+                .setIp(node.IP)
+                .setName(node.Name)
+                .setRole('unknown')
+                .setDaemonAddress(node.Addr)
+                .setNumOfCpus(node.Cpus)
+                .setMemory(node.Memory);
+        }
+        let labels = node.Labels || node.Spec.Labels;
+        for(let key in labels) {
+            answer.addProperty(key, labels[key]);
         }
         return answer;
     }

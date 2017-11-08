@@ -49,7 +49,7 @@ describe('Node', function() {
         td.when(container4.getContainerId()).thenReturn("container4");
 
         testObj = new Node('1', 'node-1')
-            .setNumberOfCpu(2).setMemory(4142297088);
+            .setMaxCpuQuota(2000000000).setMemory(4142297088);
     });
 
     it('distribute resources to containers, no resource excess', async function() {
@@ -101,8 +101,8 @@ describe('Node', function() {
 
         td.when(container1.calculateRequiredCpuQuota()).thenReturn(80000);
         td.when(container2.calculateRequiredCpuQuota()).thenReturn(15000);
-        td.when(container3.calculateRequiredCpuQuota()).thenReturn(65000);
-        td.when(container4.calculateRequiredCpuQuota()).thenReturn(78000);
+        td.when(container3.calculateRequiredCpuQuota()).thenReturn(55000);
+        td.when(container4.calculateRequiredCpuQuota()).thenReturn(50000);
 
         td.when(container1.calculateRequiredMemory()).thenReturn(1035574272);
         td.when(container2.calculateRequiredMemory()).thenReturn(635574272);

@@ -48,8 +48,8 @@ module.exports = class EnvironmentService {
         var self = this;
 
         function comparer(otherArray) {
-            return function(current) {
-                return otherArray.filter(function(other) {
+            return function (current) {
+                return otherArray.filter(function (other) {
                     return other.getContainerId() == current;
                 }).length == 0;
             }
@@ -68,10 +68,16 @@ module.exports = class EnvironmentService {
      * @param  {Realization}            realization the received realization
      */
     async evaluateRealization(realization) {
-        let environment = await this.environmentRepository.get();
-        let containers = await environment.inspectRealizationsForAnomalies(realization, this.anomalyService);
-        this.eventEmitter.emit('containers.updated', containers);
-        this.containers[realization.getContainerId()] = {};
+        if (!this.containers[realization.getContainerId()] ||
+            (Date.now() - this.containers[realization.getContainerId()].lastEvaluate) > 10) {
+
+            let environment = await this.environmentRepository.get();
+            let containers = await environment.inspectRealizationsForAnomalies(realization, this.anomalyService);
+            this.eventEmitter.emit('containers.updated', containers);
+            this.containers[realization.getContainerId()] = {
+                lastEvaluate: Date.now()
+            };
+        }
     }
 
     queryInfo() {

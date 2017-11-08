@@ -31,7 +31,7 @@ module.exports = class ContainerTranslator {
             .setNetworkSettings(container.NetworkSettings)
             .setState(this._extractState(container.State))
             .setStatus(container.Status || container.State.Status)
-            .setNode(this.nodeTranslator.translate(container.Node))
+            .setNode(this._extractNode(container))
             .setCreatedTimestamp(typeof container.Created === 'string' ?  Date.parse(container.Created) : container.Created * 1000);
         return answer;
     }
@@ -56,5 +56,18 @@ module.exports = class ContainerTranslator {
             containerMatch = /\/(.*)\.\d+\..*/g.exec(name)
         }
         return containerMatch ? containerMatch[2] || containerMatch[1] : name.replace(/^\//, '');
+    }
+
+    _extractNode(container) {
+        if(container.Node) {
+            return container.Node.ID || container.Node.Name 
+        } else {
+            var name = container.Name;
+            if (!name) {
+                name = container.Names[0];
+            }
+            var containerMatch = /\/(.*)\/(?:[a-zA-Z0-9]+_){0,1}([a-zA-Z0-9-]+)/g.exec(name);
+            return containerMatch ? containerMatch[1] : null;
+        };
     }
 }

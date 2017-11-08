@@ -1,3 +1,6 @@
 /node_modules
 Dockerfile.dev
 ./npm-debug.log
+/local_config
+/.nyc_output
+/coverage

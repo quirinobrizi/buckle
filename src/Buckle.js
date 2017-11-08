@@ -150,8 +150,8 @@ function main() {
 
     process.on('unhandledRejection', function (err) {
         logger.error("caught and unhandled rejection");
-        logger.error(err.stack);
-        process.exit(1);
+        logger.error(err);
+        console.error(err);
     });
 
     process.on('uncaughtException', function (err) {

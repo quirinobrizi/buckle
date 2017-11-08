@@ -163,12 +163,11 @@ module.exports = class Container {
     }
 
     /**
-     * Allow to provide information about the node this container is hosted on
-     * in a fluent style.
+     * The name of the node this container is deployed on
      *
-     * @param {object}
+     * @param {string}
      *            the container node
-     * @return {object} this container instance
+     * @return {Container} this container instance
      */
     setNode(node) {
         this.node = node;
@@ -176,9 +175,9 @@ module.exports = class Container {
     }
 
     /**
-     * Retrieves the node where the container is deployed
+     * Retrieves name of the node this container is deployed on
      * @method getNode
-     * @return {Node} a node instance
+     * @return {string} name of the node this container is deployed on
      */
     getNode() {
         return this.node;
@@ -190,19 +189,7 @@ module.exports = class Container {
      * @return {Boolean}      true if this container is deployed on the requested node, false otherwise.
      */
     isDeployedOnNode(node) {
-        return this.node.getName() === node;
-    }
-
-    /**
-     * Allows retrieve the name of the node this container is deployed on.
-     * @method getNodeName
-     * @return {string}    the node name
-     */
-    getNodeName() {
-        if (this.node) {
-            return this.node.getName();
-        }
-        return null;
+        return this.node === node;
     }
 
     /**
@@ -310,15 +297,17 @@ module.exports = class Container {
         if (!this.anomalies) {
             return false;
         }
-        return this.anomalies.some(function(el) {
-            var answer = false;
+        var answer = false;
+        for (var i = 0; i < this.anomalies.length; i++) {
+            var anomaly = this.anomalies[i];
             for (var i = 0; i < types.length; i++) {
-                if (el.type.includes(types[i])) {
-                    answer = true;
+                logger.debug("anomaly type %s includes? %s", anomaly.type, types[i]);
+                if (anomaly.type.includes(types[i])) {
+                    return true;
                 }
             }
-            return answer;
-        });
+        }
+        return answer;
     }
 
     /**
@@ -328,9 +317,7 @@ module.exports = class Container {
      */
     async inspect(anomalyService) {
         this.anomalies = await anomalyService.process(this);
-        if (logger.debug) {
-            logger.debug("anomalies inspection terminated, container has anomalies %s", this.hasAnomalies());
-        }
+        logger.debug("anomalies inspection terminated, container %s has anomalies %s, %s", this.getName(), this.hasAnomalies(), JSON.stringify(this.anomalies));
         return this.hasAnomalies();
     }
 
@@ -341,13 +328,13 @@ module.exports = class Container {
      * @param {Any} requirements the new limits requirements
      * @return {boolean} true if the container has been updated. false otherwise;
      */
-    async updateLimts(containerRepository, requirements) {
+    async updateLimits(containerRepository, requirements) {
         var secondsSinceLastUpdate = Math.trunc((Date.now() - this.lastUpdate) / 1000);
         logger.info('updating container %s last update %s seconds ago [%s - %s]', this.name, secondsSinceLastUpdate, Date.now(), this.lastUpdate);
         this.lastUpdate = Date.now();
         try {
             var resp = await containerRepository.update(this.id, this.buildLimitsConfiguration(requirements));
-            logger.debug("container %s configuration updated %s", this.name, JSON.stringify(resp));
+            logger.info("container %s configuration updated %s", this.name, JSON.stringify(resp));
             return true;
         } catch (e) {
             logger.error("unable to update container %s %s", this.getName(), e.stack);
@@ -358,6 +345,15 @@ module.exports = class Container {
     needToBeUpdated() {
         return this.getStatus() === 'running' &&
             (this.hasAnomaliesOfType(["cpu"]) || this.hasAnomaliesOfType(["memory"]));
+    }
+
+    defaultResourceRequirements() {
+        let answer = new Map()
+        answer.set(this, {
+            cpu: this.calculateRequiredCpuQuota(),
+            memory: this.calculateRequiredMemory()
+        });
+        return answer;
     }
 
     /**
@@ -386,11 +382,11 @@ module.exports = class Container {
         }
         var cpu = MIN_CPU_QUOTA / 1000;
         if (this.hasAnomaliesOfType(["cpu-saturated", "cpu-spike"])) {
-            cpu = metricsHelper.extractMax(this.realization, value => {
+            cpu = metricsHelper.extractMax(this.realizations, value => {
                 return value.calculateCpuUsageUnix();
             });
         } else {
-            cpu = metricsHelper.calculateAverage(this.realization, value => {
+            cpu = metricsHelper.calculateAverage(this.realizations, value => {
                 return value.calculateCpuUsageUnix();
             });
         }
@@ -408,11 +404,11 @@ module.exports = class Container {
         }
         var memory = MIN_MEMORY;
         if (this.hasAnomaliesOfType(["memory-saturated"])) {
-            memory = metricsHelper.extractMax(this.realization, value => {
+            memory = metricsHelper.extractMax(this.realizations, value => {
                 return value.getMemory().current;
             });
         } else {
-            memory = metricsHelper.calculateAverage(this.realization, value => {
+            memory = metricsHelper.calculateAverage(this.realizations, value => {
                 return value.getMemory().current;
             });
         }
@@ -420,6 +416,9 @@ module.exports = class Container {
     }
 
     _addCpuConfigIfNeeded(config, cpuQuota) {
+        if(this.hasAnomalies() && !this.hasAnomaliesOfType(["cpu"])) {
+            return;
+        }
         config.CpuPeriod = metricsHelper.ONE_SEC_IN_JIFFY;
         config.CpuQuota = cpuQuota;
 
@@ -428,6 +427,9 @@ module.exports = class Container {
     }
 
     _addMemoryConfigIfNeeded(config, memory) {
+        if(this.hasAnomalies() && !this.hasAnomaliesOfType(["memory"])) {
+            return;
+        }
         config.MemoryReservation = metricsHelper.calculateMemoryReservation(memory, MEMORY_RESERVATION_INCREMENT_PCT, MIN_MEMORY_RESERVATION);
         config.Memory = metricsHelper.calculateMemoryReservation(memory, MEMORY_INCREMENT_PCT, MIN_MEMORY);
         config.MemorySwappiness = 0;

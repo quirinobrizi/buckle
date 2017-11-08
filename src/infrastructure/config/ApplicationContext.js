@@ -50,7 +50,7 @@ module.exports = {
         });
 
         var nanoCache = new NanoCache({
-            ttl: config.buckle.cache.ttl || 30000
+            ttl: config.buckle.cache.ttl || 30000,
             bytes: config.buckle.cache.buckle || 100000
         });
 

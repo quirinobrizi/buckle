@@ -199,7 +199,7 @@ module.exports = class Environment {
      * @return {string}         the server version
      */
     getServerVersion() {
-        return serverVersion;
+        return this.serverVersion;
     }
 
     /**
@@ -338,7 +338,7 @@ module.exports = class Environment {
      * @return {Boolean} true if the node exists and the container is added, false oterwise
      */
     addContainerToNode(nodeId, container) {
-        if(this.hasNode(nodeId)) {
+        if (this.hasNode(nodeId)) {
             this.nodes.get(nodeId).addContainer(container);
             return true;
         }
@@ -373,13 +373,18 @@ module.exports = class Environment {
      * @return {Array.<Container>}  the containers deployed on the requested node
      */
     getContainersOnNode(node) {
-        let answer = [];
-        for (let [_, container] of this.containers) {
-            if (container.isDeployedOnNode(node)) {
-                answer.push(container);
+
+        if (this.containers.size == 0) {
+            return this.nodes.get(node).getContainers();
+        } else {
+            let answer = [];
+            for (let [_, container] of this.containers) {
+                if (container.isDeployedOnNode(node)) {
+                    answer.push(container);
+                }
             }
+            return answer;
         }
-        return answer;
     }
 
     /**
@@ -389,7 +394,16 @@ module.exports = class Environment {
      * @return {Container}                 the container
      */
     getContainer(containerId) {
-        return this.containers.get(containerId);
+        if (this.containers.has(containerId)) {
+            return this.containers.get(containerId);
+        } else {
+            for (let [key, node] of this.nodes) {
+                if (node.hasContainer(containerId)) {
+                    return node.getContainer(containerId);
+                }
+            }
+            return null;
+        }
     }
 
     /**
@@ -421,34 +435,32 @@ module.exports = class Environment {
      */
     async inspectRealizationsForAnomalies(realization, anomalyService) {
         let container = this.getContainer(realization.getContainerId());
+        logger.debug("inspecting realization for container %s", container.getName());
         container.addRealization(realization);
-        container.inspect(anomalyService)
-        if (container.hasAnomalies()) {
+        let foundAnomalies = await container.inspect(anomalyService);
+        if (foundAnomalies) {
             logger.info("found anomalies on container %s", container.getName());
-            let node = container.getNodeName();
+            let node = container.getNode();
             let containerRequirements;
             if (node) {
-                let containers = this.getContainersOnNode(node);
-                containerRequirements = await container.getNode().distributeResources(containers);
+                containerRequirements = await this.getNode(node).distributeResources();
+                logger.info("computed container requirements %s", containerRequirements);
+                if (containerRequirements.size == 0) {
+                    containerRequirements = container.defaultResourceRequirements();
+                }
+                // let containers = this.getContainersOnNode(node);
+                // containerRequirements = await container.getNode().distributeResources(containers);
             } else {
-                containerRequirements = new Map()
-                containerRequirements.set(container, {
-                        cpu: container.calculateRequiredCpuQuota(),
-                        memory: container.calculateRequiredMemory()
-                    });
+                containerRequirements = container.defaultResourceRequirements();
             }
             for (let [container, requirement] of containerRequirements) {
-                try {
-                    container.updateLimts(this.containerRepository, requirement);
-                } finally {
-                    realization.setAllocatedCpu(container.getCpuLimit());
-                    this.containerRepository.save(container);
-                }
+                await container.updateLimits(this.containerRepository, requirement);
+                realization.setAllocatedCpu(container.getCpuLimit());
+                this.containerRepository.save(container);
             }
-            return Arrays.from(containerRequirements.keys());
-
+            return Array.from(containerRequirements.keys());
         } else {
-            logger.debug("no anomalies detected");
+            logger.debug("no anomalies detected on container %s", container.getName());
             realization.setAllocatedCpu(container.getCpuLimit());
             this.containerRepository.save(container);
             return [container];

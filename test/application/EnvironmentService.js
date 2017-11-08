@@ -41,7 +41,9 @@ describe('EnvironmentService', function() {
         eventEmitter = td.object({
             emit: function(evt, obj) {}
         });
-        realization = td.object({});
+        realization = td.object({
+            getContainerId: function() {}
+        });
 
         testObj = new EnvironmentService(eventEmitter, anomalyService, environmentRepository);
     });

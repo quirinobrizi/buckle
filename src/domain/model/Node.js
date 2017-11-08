@@ -31,6 +31,10 @@ module.exports = class Node {
         this.containers = new Map();
     }
 
+    static default(id) {
+        return new Node(id);
+    }
+
     /**
      * Retrieves the identifier of this node
      * @method getId
@@ -119,26 +123,35 @@ module.exports = class Node {
         return this.role;
     }
 
+    setNumOfCpus(numOfCpus) {
+        this.numOfCpus = numOfCpus;
+        return this;
+    }
+
+    getNumberOfCpus() {
+        return this.numOfCpus;
+    }
+
     /**
-     * Set the number of CPU available on this node.
-     * @method setNumberOfCpu
-     * @param  {number}       numberOfCpu the number of CPU
+     * Set the max CPU quota available on this node.
+     * @method setMaxCpuQuota
+     * @param  {number}       maxCpuQuota the max CPU quota
      * @return {Node} this node
      */
-    setNumberOfCpu(numberOfCpu) {
-        if (!this.numberOfCpu) {
-            this.numberOfCpu = numberOfCpu;
+    setMaxCpuQuota(maxCpuQuota) {
+        if (!this.maxCpuQuota) {
+            this.maxCpuQuota = maxCpuQuota;
         }
         return this;
     }
 
     /**
-     * Retrive the number of CPU available on this node.
-     * @method getNumberOfCpu
-     * @return {number}       numberOfCpu the number of CPU
+     * Retrive the max CPU quota available on this node.
+     * @method getMaxCpuQuota
+     * @return {number}       maxCpuQuota the max CPU quota
      */
-    getNumberOfCpu() {
-        return this.numberOfCpu;
+    getMaxCpuQuota() {
+        return this.maxCpuQuota;
     }
 
     /**
@@ -216,30 +229,34 @@ module.exports = class Node {
         return Array.from(this.containers.values());
     }
 
+    hasContainer(containerId) {
+        return this.containers.has(containerId);
+    }
+
     /**
      * Distribute this container resources to all containers deployed
      * on this node. The distribution is done heuristically meaning that
      * the resources are assigned as best as possible without search for the
      * absolute optimum.
      * @method distributeResources
-     * @param {Array<Container>}       containers the containers the resources need to be distributed to
      * @return {Map}                 the updated containers
      */
     async distributeResources(containers) {
-        logger.info("found %s containers deployed on node %s", containers.length, this.getName());
-
-        var answer = [];
-
-        let maxCpuQuota = (this.getNumberOfCpu() * metricsHelper.ONE_SEC_IN_JIFFY) / containers.length;
-        let maxMemoryQuota = (this.getMemory() / containers.length);
+        let maxCpuQuota = this.getMaxCpuQuota() ? this.getMaxCpuQuota() : (this.getNumberOfCpus() * metricsHelper.ONE_SEC_IN_JIFFY) / this.containers.length;
+        let maxMemoryQuota = (this.getMemory() / this.containers.length);
         let requirements = new Map();
+
+        logger.info("Quotas: CPU: %s Memory: %s", maxCpuQuota, maxMemoryQuota);
+        if(isNaN(maxCpuQuota) || isNaN(maxMemoryQuota)) {
+            return requirements
+        }
+
         let excessRequiredBy = [];
         let cpuExcess = 0;
         let memoryExcess = 0;
 
         logger.info("Node %s has available container quotas CPU: %s, Memory: %s", this.getName(), maxCpuQuota, maxMemoryQuota);
-        for (let i = 0; i < containers.length; i++) {
-            let container = containers[i];
+        for (let [id, container] of this.containers) {
             let cpuQuota = container.calculateRequiredCpuQuota();
             let memoryQuota = container.calculateRequiredMemory();
 

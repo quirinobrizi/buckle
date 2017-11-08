@@ -89,6 +89,10 @@ module.exports = {
                     fact: 'currentCpuLimit',
                     operator: 'lessThanInclusive',
                     value: 95
+                }, {
+                    fact: 'currentCpuLimit',
+                    operator: 'greaterThanInclusive',
+                    value: 15
                 }]
             },
             event: {
@@ -100,10 +104,10 @@ module.exports = {
         }, {
             conditions: {
                 all: [{
-                    fact: 'currentMemoryLimit',
+                    fact: 'lastMemoryUsage',
                     operator: 'differenceGreaterThan25Percent',
                     value: {
-                        fact: 'lastMemoryUsage',
+                        fact: 'currentMemoryLimit',
                     }
                 }, {
                     fact: 'currentMemoryLimit',
@@ -125,7 +129,7 @@ module.exports = {
             conditions: {
                 all: [{
                     fact: 'currentMemoryLimit',
-                    operator: 'differenceLessThan5Percent',
+                    operator: 'lessThanInclusive',
                     value: {
                         fact: 'lastMemoryUsage',
                     }

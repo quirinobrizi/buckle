@@ -22,7 +22,7 @@ const Realization = require('../../../src/domain/model/Realization');
 const Node = require('../../../src/domain/model/Node');
 
 describe('Container', function () {
-    it('evaluate anomalies by prefix', function (done) {
+    it('evaluate anomalies by prefix', function () {
         var testObj = new Container("1", "1", "image");
         testObj.setAnomalies([{
             type: "cpu-excess"
@@ -31,9 +31,8 @@ describe('Container', function () {
         }]);
         var actual = testObj.hasAnomaliesOfType("cpu");
         actual.should.be.true;
-        done();
     });
-    it('evaluate anomalies by prefix, anomaly does not exists', function (done) {
+    it('evaluate anomalies by prefix, anomaly does not exists', function () {
         var testObj = new Container("1", "1", "image");
         testObj.setAnomalies([{
             type: "cpu-excess"
@@ -42,9 +41,8 @@ describe('Container', function () {
         }]);
         var actual = testObj.hasAnomaliesOfType("abcd");
         actual.should.be.false;
-        done();
     });
-    it('evaluate anomalies by full match', function (done) {
+    it('evaluate anomalies by full match', function () {
         var testObj = new Container("1", "1", "image");
         testObj.setAnomalies([{
             type: "cpu-excess"
@@ -53,7 +51,6 @@ describe('Container', function () {
         }]);
         var actual = testObj.hasAnomaliesOfType("cpu-excess");
         actual.should.be.true;
-        done();
     });
 
     it('builds required limits', function (done) {
@@ -316,14 +313,14 @@ describe('Container', function () {
 
     it('validate node appartenence, success', function() {
         var testObj = new Container("1", "1", "1");
-        testObj.setNode(new Node("1", "node-1"));
+        testObj.setNode(new Node("1").setName("node-1"));
         // act
         assert.equal(true, testObj.isDeployedOnNode("node-1"));
     });
 
     it('validate node appartenence, failure', function() {
         var testObj = new Container("1", "1", "1");
-        testObj.setNode(new Node("1", "node-1"));
+        testObj.setNode(new Node("1").setName("node-1"));
         // act
         assert.equal(false, testObj.isDeployedOnNode("node-2"));
     });

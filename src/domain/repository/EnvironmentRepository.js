@@ -16,7 +16,11 @@
 
 'use strict'
 
+const Node = require('../model/Node');
 const Environment = require('../model/Environment');
+const NodeTranslator = require('./translator/NodeTranslator');
+
+const logger = require('../../infrastructure/Logger');
 
 module.exports = class EnvironmentRepository {
 
@@ -24,6 +28,8 @@ module.exports = class EnvironmentRepository {
         this.dockerEngineClient = dockerEngineClient;
         this.containerRepository = containerRepository;
         this.nodeTranslator = new NodeTranslator();
+
+        this.swarmKitEnabled = true;
     }
 
     /**
@@ -31,38 +37,30 @@ module.exports = class EnvironmentRepository {
      * @return {Environment} the environment
      */
     async get() {
-        let swarm = await this.dockerEngineClient.getSwarm();
-        let answer = new Environment(swarm.Name || swarm.Spec.Name);
+        logger.debug("retrieve environment");
+        let answer = await this.queryInfo();
+        answer.setContainerRepository(this.containerRepository);
         try {
-            // Build environment starting from tasks, this is when SwarmKit (Swarm mode)
-            // is enabled.
-            let tasks = await this.dockerEngineClient.listTasks();
-            for (var i = 0; i < tasks.length; i++) {
-                let task = tasks[i];
-                let nodeId = task.NodeID;
-                let container = await this.containerRepository.getContainer(task.Status.ContainerStatus.ContainerID);
-                if(answer.hasNode(nodeId)) {
-                    answer.addContainerToNode(nodeId, container);
-                } else {
-                    let node = this.nodeTranslator(await this.dockerEngineClient.inspectNode(task.NodeID);
-                    node.addContainer(container);
-                    answer.addNode(node);
+            if (this.swarmKitEnabled) {
+                logger.debug("Try build environment starting from tasks, this is when SwarmKit (Swarm mode) is enabled.")
+                let tasks = await this.dockerEngineClient.listTasks();
+                for (var i = 0; i < tasks.length; i++) {
+                    let task = tasks[i];
+                    let nodeId = task.NodeID;
+                    let container = await this.containerRepository.getContainer(task.Status.ContainerStatus.ContainerID);
+                    if (container.getName().includes('swarm-agent')) {
+                        continue;
+                    }
+                    await this._addContainer(answer, container, nodeId);
                 }
+            } else {
+                answer = this._loadFromContainers(answer);
             }
         } catch (e) {
-            // SwarmKit not enabled build from containers list
-            let containers = await this.containerRepository.getAll();
-            for (var i = 0; i < containers.length; i++) {
-                var container = containers[i];
-
-            }
+            this.swarmKitEnabled = false;
+            answer = await this._loadFromContainers(answer);
         }
-
-        // let nodes = await self.dockerEngineClient.listNodes();
-
-        return new Environment(swarm.Name || swarm.Spec.Name)
-            .setContainers(containers)
-            .setContainerRepository(this.containerRepository);
+        return answer;
     }
 
     /**
@@ -72,7 +70,7 @@ module.exports = class EnvironmentRepository {
      */
     async queryInfo() {
         let details = await this.dockerEngineClient.queryInfo();
-        return new Environment(details.Swarm.Cluster.Spec.Name)
+        return new Environment(details.Name || details.Swarm.Cluster.Spec.Name)
             .setNumberOfContainers(details.Containers)
             .setNumberOfRunningContainers(details.ContainersRunning)
             .setNumberOfPausedContainers(details.ContainersPaused)
@@ -84,5 +82,37 @@ module.exports = class EnvironmentRepository {
             .setOsType(details.OSType)
             .setOperatingSystem(details.OperatingSystem)
             .setKernelVersion(details.KernelVersion);
+    }
+
+    async _loadFromContainers(answer) {
+        logger.debug("SwarmKit not enabled build nodes from containers list");
+        let containers = await this.containerRepository.getAll();
+        for (var i = 0; i < containers.length; i++) {
+            let container = await this.containerRepository.get(containers[i].getContainerId());
+            logger.debug("adding container %s", container.getName());
+            if (container.getName().includes('swarm-agent')) {
+                continue;
+            }
+            let nodeId = container.getNode();
+            await this._addContainer(answer, container, nodeId);
+        }
+        return answer;
+    }
+
+    async _addContainer(environment, container, nodeId) {
+        if (environment.hasNode(nodeId)) {
+            environment.addContainerToNode(nodeId, container);
+        } else {
+            logger.debug("node %s not found inspecting it", nodeId);
+            let node;
+            if (this.swarmKitEnabled) {
+                node = this.nodeTranslator.translate(await this.dockerEngineClient.inspectNode(nodeId));
+            } else {
+                logger.debug("unable to inspect node create a default one")
+                node = Node.default(nodeId);
+            }
+            node.addContainer(container);
+            environment.addNode(node);
+        }
     }
 };

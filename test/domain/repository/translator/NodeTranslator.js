@@ -50,7 +50,7 @@ describe('Node Translator', function() {
         assert.equal(node.IP, actual.getIp());
         assert.equal(node.Addr, actual.getDaemonAddress());
         assert.equal(node.Name, actual.getName());
-        assert.equal(node.Cpus, actual.getNumberOfCpu());
+        assert.equal(node.Cpus, actual.getNumberOfCpus());
         assert.equal(node.Memory, actual.getMemory());
         assert.deepEqual(properties, actual.getProperties());
     });

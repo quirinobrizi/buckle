@@ -21,23 +21,24 @@ const assert = require('assert');
 
 const Environment = require('../../../src/domain/model/Environment');
 
-describe("Environment", function() {
+describe("Environment", function () {
 
     var testObj, container1, container2, containerRepository;
-    before(function() {
+    before(function () {
         var c = {
-            getContainerId: function() { },
-            getName: function() { },
-            isDeployedOnNode: function(node) {},
-            inspect: function(anomalyService, containerRepository) {},
-            getNodeName: function() {},
-            updateLimts: function(containerRepository) {},
-            getNode: function() {},
-            addRealization: function(r) {},
-            getCpuLimit: function() {}
+            getContainerId: function () {},
+            getName: function () {},
+            isDeployedOnNode: function (node) {},
+            inspect: function (anomalyService, containerRepository) {},
+            getNodeName: function () {},
+            updateLimts: function (containerRepository) {},
+            getNode: function () {},
+            addRealization: function (r) {},
+            getCpuLimit: function () {},
+            hasAnomalies: function() {}
         };
         containerRepository = td.object({
-            save: function(c) {}
+            save: function (c) {}
         });
         container1 = td.object(c);
         container2 = td.object(c);
@@ -49,7 +50,7 @@ describe("Environment", function() {
         testObj.setContainers(containers).setContainerRepository(containerRepository);
     });
 
-    it("provide containers on node", function() {
+    it("provide containers on node", function () {
 
         td.when(container1.isDeployedOnNode("a")).thenReturn(true);
         td.when(container1.getName()).thenReturn("container1");
@@ -64,7 +65,7 @@ describe("Environment", function() {
         assert.equal("container1", actual[0].getName());
     });
 
-    it("allows retrieve a container", function() {
+    it("allows retrieve a container", function () {
 
         td.when(container1.isDeployedOnNode("a")).thenReturn(true);
         td.when(container1.getName()).thenReturn("container1");
@@ -78,7 +79,7 @@ describe("Environment", function() {
         assert.equal("container2", actual.getName());
     });
 
-    it("return null if container does not exists", function() {
+    it("return null if container does not exists", function () {
 
         td.when(container1.isDeployedOnNode("a")).thenReturn(true);
         td.when(container1.getName()).thenReturn("container1");
@@ -92,9 +93,9 @@ describe("Environment", function() {
         assert.equal(undefined, actual);
     });
 
-    it('inspects realizations for anomalies, no anomalies detected', function() {
+    it('inspects realizations for anomalies, no anomalies detected', function () {
         let realization = td.object({
-            getContainerId: function() {}
+            getContainerId: function () {}
         });
         let anomalyService = td.object({});
         let containerRepository = td.object({});
@@ -109,34 +110,38 @@ describe("Environment", function() {
         td.verify(container1.addRealization(realization));
     });
 
-    it('inspects realizations for anomalies, anomalies detected', async function() {
-        let realization = td.object({
-            getContainerId: function() {},
-            setAllocatedCpu: function() {}
-        });
-        let anomalyService = td.object({});
-        let node = td.object({
-            distributeResources: function(containerRepository, containers) {}
-        });
+    it('inspects realizations for anomalies, anomalies detected', async function () {
+        try {
+            let realization = td.object({
+                getContainerId: function () {},
+                setAllocatedCpu: function () {}
+            });
+            let anomalyService = td.object({});
+            let node = td.object({
+                distributeResources: function (containerRepository, containers) {}
+            });
 
-        td.when(container1.getNode()).thenReturn(node);
-        td.when(realization.getContainerId()).thenReturn("1");
-        td.when(container1.getNodeName()).thenReturn("a");
-        td.when(container1.isDeployedOnNode("a")).thenReturn(true);
-        td.when(container1.inspect(anomalyService)).thenReturn(true);
+            td.when(container1.getNode()).thenReturn(node);
+            td.when(realization.getContainerId()).thenReturn("1");
+            td.when(container1.getNodeName()).thenReturn("a");
+            td.when(container1.isDeployedOnNode("a")).thenReturn(true);
+            td.when(container1.inspect(anomalyService)).thenReturn(true);
 
-        let containerRequirements = new Map();
-        containerRequirements.set(container1, {
-            cpu: 50000,
-            memory: 9876754312
-        })
-        td.when(node.distributeResources([container1])).thenReturn(containerRequirements);
-        // act
-        var actual = await testObj.inspectRealizationsForAnomalies(realization, anomalyService);
-        // assert
-        assert.equal(1, actual.length);
-        assert.deepEqual([container1], actual);
-        // verify
-        td.verify(container1.addRealization(realization));
+            let containerRequirements = new Map();
+            containerRequirements.set(container1, {
+                cpu: 50000,
+                memory: 9876754312
+            })
+            td.when(node.distributeResources([container1])).thenReturn(containerRequirements);
+            // act
+            var actual = await testObj.inspectRealizationsForAnomalies(realization, anomalyService);
+            // assert
+            assert.equal(1, actual.length);
+            assert.deepEqual([container1], actual);
+            // verify
+            td.verify(container1.addRealization(realization));
+        } catch (e) {
+            console.log(e.stack);
+        }
     });
 });

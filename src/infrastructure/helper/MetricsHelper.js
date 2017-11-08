@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright [2017] [Quirino Brizi (quirino.brizi@gmail.com)]
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -20,11 +20,11 @@ module.exports = {
 
   ONE_SEC_IN_JIFFY: 100000,
 
-  calculateCpuQuota(maxCpu, minQuota, maxQuota) {
+  calculateCpuQuota(cpu, minQuota, maxQuota) {
     // max CPU is given as a percentage
-    var currentRequiredQuota = (this.ONE_SEC_IN_JIFFY * maxCpu) / 100;
+    var currentRequiredQuota = (this.ONE_SEC_IN_JIFFY * cpu) / 100;
     // increase quota of 50%
-    var quota = currentRequiredQuota + ((currentRequiredQuota * 50) / 100);
+    var quota = 2 * currentRequiredQuota; // + ((currentRequiredQuota * 50) / 100);
     var answer = (quota < minQuota) ? minQuota : quota;
     return Math.round((answer > maxQuota) ? maxQuota : answer);
   },
