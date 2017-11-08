@@ -1,0 +1,151 @@
+buckle:
+  cache:
+    ttl: 30000
+    bytes: 100000000
+  eureka:
+    enabled: false
+    ip:
+    port:
+    host:
+    name: buckle
+  http:
+    enabled: true
+    port: 8080
+  https:
+    enabled: false
+    port: 8443
+    cert: |
+      -----BEGIN CERTIFICATE-----
+      MIICxTCCAi4CCQC4qqVRkgkFhDANBgkqhkiG9w0BAQUFADCBpjELMAkGA1UEBhMC
+      R0IxFjAUBgNVBAgTDUdyZWF0IEJyaXRhaW4xDzANBgNVBAcTBkxvbmRvbjEPMA0G
+      A1UEChMGQnVja2xlMRQwEgYDVQQLEwtkZXZlbG9wbWVudDEfMB0GA1UEAxMWZGV2
+      ZWxvcG1lbnQuYnVja2xlLm9yZzEmMCQGCSqGSIb3DQEJARYXcXVpcmluby5icml6
+      aUBnbWFpbC5jb20wHhcNMTcwNzA1MjEzNDI3WhcNMTcwODA0MjEzNDI3WjCBpjEL
+      MAkGA1UEBhMCR0IxFjAUBgNVBAgTDUdyZWF0IEJyaXRhaW4xDzANBgNVBAcTBkxv
+      bmRvbjEPMA0GA1UEChMGQnVja2xlMRQwEgYDVQQLEwtkZXZlbG9wbWVudDEfMB0G
+      A1UEAxMWZGV2ZWxvcG1lbnQuYnVja2xlLm9yZzEmMCQGCSqGSIb3DQEJARYXcXVp
+      cmluby5icml6aUBnbWFpbC5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGB
+      AMkocN7UMRugPHtIpnkf09W+/Vm7YzW0J6wGrVfu8KBHqgXy/fHFu5YAsqnBFbd2
+      u96ZWse/ui5H6Wi8TVuxlPXleEPle9D2cj8WHK1tM5vXqd+xB16PcX1ZVoon3Fxp
+      pfoA87IV3DUHWRk1gKhpnDq4PjNL0DNHBEIe/brJ5EW5AgMBAAEwDQYJKoZIhvcN
+      AQEFBQADgYEAmlsk0OiV1BRBWaIpQnYBTGCxCQv4wo/J5FsB18xBCVLYvwCI2/Z2
+      GFBeqBe9/s4zG/U5bdQOcEf2dfKo0sMzwIG4Iq6KvTtf75gs0Hlzzrg/yVT8NNT+
+      qPTP+oqy5/3M1w81thpJGH6QZTKC/M5Z8VSqoKRn81eAldVy/4Wl018=
+      -----END CERTIFICATE-----
+    key: |
+      -----BEGIN RSA PRIVATE KEY-----
+      MIICXQIBAAKBgQDJKHDe1DEboDx7SKZ5H9PVvv1Zu2M1tCesBq1X7vCgR6oF8v3x
+      xbuWALKpwRW3drvemVrHv7ouR+lovE1bsZT15XhD5XvQ9nI/FhytbTOb16nfsQde
+      j3F9WVaKJ9xcaaX6APOyFdw1B1kZNYCoaZw6uD4zS9AzRwRCHv26yeRFuQIDAQAB
+      AoGAV5mg7akCacFyFU4iEQVnPuIZeoY8QhreW+/cdTq810/eHxEevbcaZcyQAZTw
+      XCD814d5HRvFfHocj1vRZGkFMPqRqd5oIzfQfSXvKxZ4zig8i8Btt4UFIGlolnzR
+      mOPcqWVIeaaIKOQNNMZzZ3eXzRVvxpisvmiy3Lrg1bJz9sECQQDtN0m2D/erHx7f
+      0eJZ/G8FOn4R8SsvuPSuR/K38FwPofnjye7d0vBXfRejnB5Bt2ji1erlsSfeavCk
+      qrTZpyuNAkEA2RY0fR5DSFlulkRTZv67JYH3jZB6dmQPjWAusUH0CCkf2Yyn7GwD
+      hyc86uh4HhHFQ8PPn+SkGUIL7YTtJvCh3QJBAIm5ieBckO0XWnOUhhi8yTB972g3
+      X12LwvPU7gUBVlH1NwKb4UWFDOmexTTGlYKOHCVnEcReAMnPyPux6OJdfpkCQQCu
+      +qf6Rd9jvLpXouE6/o4osHayg8dCEGs8wE9Cj2+8+DD08NwVxAaf9O+0RQc07Yv8
+      kCOVtPzUYxksLV3eak19AkAoKB3DD4jD5b2I6Y4bxGEd6Yj/4hhLJ1ObHMwgPk39
+      LI9Ct+3z+Lueg+bEI4uEAYcI3Nm4aeauXaH+TZmfKNag
+      -----END RSA PRIVATE KEY-----
+    ca: |
+
+  cometd:
+    enabled: true
+  authentication:         # Define the authentication strategy, authentication is done using passport
+                          # so verify function need to respect th efirm defined for the supported passport modules.
+    jwt:
+      secret: secret      # The secret or key applied for the JWT token generation
+    verifier:             # Describe how the authentication should be verified
+      type: local        # The verifier that will validate client credential, allowed values are: oauth2, local and remote. Local will verify the provided username and password from a local DB, remote from a remote server
+      client:             # OAuth2 client information
+        id:
+        secret:
+      accessTokenUri:
+      scopes: user
+      db: buckle:buckle   # List of comma-separated username:password to verify against the provided credential
+      contentType: application/x-www-form-urlencoded # The content type of the data sent to the remote verifier
+    user:
+      profile:
+        retrieve: false    # enable/disable profile retrieval
+        referer:           # The referer to set requesting user profile
+        uri:               # The URI that allows profile retrieval, will be formatted as user.profile.uri/<username>
+        firstName:         # The property on the response payload that identifies the user first name, default to firstName
+        lastName:          # The property on the response payload that identifies the user last name, default to lastName
+        picture:              # The property on the response payload that identifies the user picture, default to picture
+  event:
+    listeners:            # Custom event listeners
+docker:
+  registry:         # Define docker registry configuration
+    uri: https://localhost/registry           # The docker registry URL
+    password:       # The docker registry password
+    username:       # The docker registry username
+    email:          # The docker registry email
+  engine:           # Define docker engine configuration
+    uri:            # The docker engine URL
+    cert: |
+      -----BEGIN CERTIFICATE-----
+      MIIC7zCCAdegAwIBAgIQKrj4AaTjcdb8241ZHy9+eDANBgkqhkiG9w0BAQsFADAS
+      MRAwDgYDVQQKEwdxdWlyaW5vMB4XDTE2MDEyMjA5MjAwMFoXDTE5MDEwNjA5MjAw
+      MFowHjEcMBoGA1UECgwTcXVpcmluby48Ym9vdHN0cmFwPjCCASIwDQYJKoZIhvcN
+      AQEBBQADggEPADCCAQoCggEBAMmQbmf8gF0WReoEd4DKGbiD1A7G840ZL4zp46RG
+      JaZ6R+V4ocWoZ+OxkW2bw5Wdq4yFBYc1cycLaDGKV94+y6Jh4nbJQEWEIerZGucQ
+      Q4AoGh34icolQ7Rd0yBLSoriFgsvPfDzhYyVaRPEWPtN2n3bxz7Td1jzjCZNH4Ht
+      m6ahuDuqKr2GainlN58tdSDaEbjt3eGtqz5l2HDWQMR8wjfmAi333ACC0j6vEjnX
+      sFrhI9u4WioNXO9yrZd1wQUW1aW/TreyWgasgE87dknh5K4SD3giUxpJ4n0U7bik
+      Tx7afUsT8oqs5oTDr2leiXhnv5OVrNTQPpBgdq2YudTacEECAwEAAaM1MDMwDgYD
+      VR0PAQH/BAQDAgeAMBMGA1UdJQQMMAoGCCsGAQUFBwMCMAwGA1UdEwEB/wQCMAAw
+      DQYJKoZIhvcNAQELBQADggEBAEN3afSJH1vZqjLRAxIWIfrr7YzlD25fafzqWFQT
+      hRoze94Edr2WuQojdzKS3Qr73YtuezqukWg1DtQxljWBrdkEMtf1ZjV957HfvBVV
+      2DfHxtR61Oe6HiFt9uKeooDCSdW/S759yrMc51mNudjaK0lBidux8GWPw2QviLtb
+      msw1eSRNnCz+R8dFOK3pJYzqmHeoGqxAwEm0GR9qnfb7yzNLf0+6dLjM8s/r7v4M
+      1ssmdu7EfOp4SKD92BLYZSv+ybikHPx/DnsRwtVRXMhlr2pg6og3vhboRC+zFq4W
+      2BzZ7d2D7YcEvhJwNo1XRtTuD7hmbl8Sc4IALBOqST9JsVU=
+      -----END CERTIFICATE-----
+    key: |
+        -----BEGIN RSA PRIVATE KEY-----
+        MIIEogIBAAKCAQEAo0u1Zt2afw1SWsse8jQN0H85rEoZlrvIHsAOrwEjjGPW4ZHq
+        ozLUVnXffDfBlgZG5T9sD418r9PDZ5TV2EXCFvPPRrJpkZFDL1Z1PXOmFy8pQfRR
+        w/YoE1wzYEQTT6Yq+c7fcyDSLsaJhTHSJJVWImmeb1ifIV/L+bnks+VLa1uzeqt7
+        bt8Yf5nhoHSPmSPEtcFTCQzD4HPpKOTX0UzyshGWU4eZXo+TT+64HpdJo7m/wGIJ
+        bdK9TqT5wna/HeM39B6EHbyMNeNhOuZ67FG8XX5KNoQVZ2wbOuDQTB487sheOFJL
+        VzRSUBEZRykr0XZtzjPNdKkfzxSLq8eJf4WeAwIDAQABAoIBAA2HmlIZjlF0kxw+
+        tCOxOGvL/sVNpm0cxen2U8EgQQfCxe0On/hBn+JCBfBO1lVN09XuuU9Yk7olu4z7
+        gfRXY0tvi/75jVGoTX7AlRowWNSW7b4vNg8ceBmSjBcvzMHOrMTh5RWu5HtHq+FD
+        TXwGe4qCYcQr/ZNQUqAwTMiy+Nq+LmoShgNSsxWJareb8VwksNSgapco/a4vU85R
+        1YsEM60mvBULQN+4l+tbX5yekDeBy3U2sV8yw1ptjiQkKG2e5/QdKQK6ZKefi6M6
+        5j65SDm3AehUrt1NWLmIIse4qpDqkPfVHJ7uXZXFzZavoAtFwOEUvlH1wOlQftGb
+        unFb/UECgYEA1OhhD+qzvkr7I4yBlNVA+/Fjov9FqYfbtHMR+5GtlWAfEbVhTs0k
+        ELGE4Q3zDOfi3sIUYiR1or+cIdC03YIHoENUjvqgPwWhFatHiN7rOLJvOv9DnSSR
+        BgCZazkRm101eyJS0cpsVMz5jyueqhUgFdWSP6tLISVCBhLHAxeOnHECgYEAxFi6
+        n0oNcWPWFE5IvRhGHvsvPTY1YjwSOAbuTjTKhGMWwwyAV9EvjuEEJhTIN4tfjiiJ
+        4LcEidw3TVnXKgjjuL0WqEuW6KxuRQS0d/aatO90uRCoswFQSQvY3v/XD2/z6vzR
+        iKJr8B3CDDTA+Pixa+vraXOPFEzI/gCaH2Oba7MCgYBcXoklz6y1xXAZpy7c9Hxi
+        EgMpR1jgyUl/i2Dk5PoLUY2JMEkMWCHqgCnnPhcRpVUfUdJoFetXdYv2e8bMR0qp
+        tCxub7uwO+/8J7g8YIJqsbdiQDcEaUXl9cKZ60OBRTobtvN5gznmvJsVC1al8c5e
+        yq7NorJQqgpv+huPctvzcQKBgEtokHQw6qzL3SJ7VnBZbETlz6TAtwv9ajneX5Pl
+        rondzJYorPoNOyiyvvcpMCQ1AQQGCb4mTDXuP8cTZBGezGbdKGCGd3TxFICpZ+5S
+        5ePru3aAMWpebMlBJY+vzpb9Nj7fzlGdn7rekvJBKIP2b521Q/qCCUeQnfj/njHD
+        /aMFAoGABHDqwA85gvpAUWdK5YXKAVMi/WQxzgk3UbIqwPZdRQ2GJGLiMDvg0yJo
+        VymppRW1yT5H1p4T38oARkshhSLkDmYclJKKw16yBVPvpS1edmlxnfsdUCpDb1wP
+        bieBdHs4kG85CkQxvNLRFfWyDYzO5pepzLugPKZT6J0R5B0+5HE=
+        -----END RSA PRIVATE KEY-----
+    ca: |
+        -----BEGIN CERTIFICATE-----
+        MIIC3jCCAcagAwIBAgIRANATs7+WHbIGZGUupsuwZZcwDQYJKoZIhvcNAQELBQAw
+        GDEWMBQGA1UEChMNcXVpcmluby5icml6aTAeFw0xNzExMDIyMTIxMDBaFw0yMDEw
+        MTcyMTIxMDBaMBgxFjAUBgNVBAoTDXF1aXJpbm8uYnJpemkwggEiMA0GCSqGSIb3
+        DQEBAQUAA4IBDwAwggEKAoIBAQDAqELQ5F5r29iocIkKARJIqc30/K0fFyg2gANA
+        YAmNjr0Gx+enOxC5wCtxfiTfgcYjeMhRDTVDYjGsAZECcJ6mgFM+Fb48ELFbJ9Kk
+        rCVyG2jm6+8eB9JNJKFjPQAieKebKaAf9gK361pNevRmf1uR/WnkiVeBMm77eceB
+        lqM8JGl8JAY7dYCDnQ0ADMZohaZFwqMVrtoMFm7+M1uk3C9xhnvsm7hzs++XxbII
+        jZ0mp0bBty2ZDMehr9Z0GxpctBY5P7SAEI1bfd7mzK0MguhGAkaIwSJVSs76TStQ
+        qQ1RKxi35aTBxYCLV3pYxZRwzZJhbtqu8NaeHTX6d6h9j3o9AgMBAAGjIzAhMA4G
+        A1UdDwEB/wQEAwICrDAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IB
+        AQCejHE9tuktXulN/muyJj9XN3m/zqvdN/i1sAGcOlkdWKQr7pEltotwCNPvD+7k
+        ZNvOHQvWR6CI8BwdiLjGn7xYR8/+sUEtnGAV1tVnqcH+J4/lGk9Uo1bZvUZYrDbI
+        6mqYCmFSu6+/9rmFDtVgL+bHQ9sVRhyXy3GCwXjWq4v00hSAw3oWJiMF+4AM+qP5
+        pXZ4SO/Q/Gr5YwLXmq63iZqLA783OMt6REQ/UEG74HbDY4NjFFhN/HO5egbhbnyP
+        0Bbzgx57UZPRkTApyP4NDH/EMfxHROKSJR8tA3VqCYj8worwI936G6j7wQi427j6
+        wkBpCRslS8LOVWF/emRVFaHu
+        -----END CERTIFICATE-----
