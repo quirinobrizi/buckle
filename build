@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# git checkout master
+# git pull origin master
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+VERSION="$(cat package.json | grep version | awk '{print $2}' | sed 's/\"\|,//g')-${BRANCH}"
+echo "building Buckle version $VERSION"
+
+echo "Building docker image"
+docker build -t quirinobrizi/buckle:$VERSION .
+echo "Push docker image to dockerhub"
+docker push quirinobrizi/buckle:$VERSION

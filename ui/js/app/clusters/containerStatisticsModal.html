@@ -1,0 +1,34 @@
+<div class="container-fluid">
+	<div class="modal-header">
+		<button class="modal-close pull-right cursor-pointer"
+			ng-click="$ctrl.cancel()">
+			<span class="glyphicon glyphicon-remove"></span>
+		</button>
+		<div class="modal-title" id="modal-title">
+			<span>{{$ctrl.name}}</span><span class="pull-right">last read:
+				{{$ctrl.lastRead()}}</span>
+		</div>
+	</div>
+	<div class="modal-body" id="modal-body">
+		<div class="row">
+			<div class="col-md-6">
+				<nvd3 options="$ctrl.cpuOptions" data="$ctrl.cpuDataset"
+					class="with-3d-shadow with-transitions"></nvd3>
+			</div>
+			<div class="col-md-6">
+				<nvd3 options="$ctrl.networkOptions" data="$ctrl.networkDataset"
+					class="with-3d-shadow with-transitions"></nvd3>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-6">
+				<nvd3 options="$ctrl.blkioOptions" data="$ctrl.blkioDataset"
+					class="with-3d-shadow with-transitions"></nvd3>
+			</div>
+			<div class="col-md-6">
+				<nvd3 options="$ctrl.memoryOptions" data="$ctrl.memoryDataset"
+					class="with-3d-shadow with-transitions"></nvd3>
+			</div>
+		</div>
+	</div>
+</div>

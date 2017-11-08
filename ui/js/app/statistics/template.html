@@ -1,0 +1,37 @@
+<div class="row page">
+	<div class="col-md-2">
+		<sidebar></sidebar>
+	</div>
+	<div class="col-md-10" ng-if="!$ctrl.loading">
+		<div class="row">
+			<div class="col-md-12">
+				<nvd3 options="$ctrl.options.cpu" data="$ctrl.datasets.cpu"
+					class="with-3d-shadow with-transitions"></nvd3>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<nvd3 options="$ctrl.options.memory" data="$ctrl.datasets.memory"
+					class="with-3d-shadow with-transitions"></nvd3>
+			</div>
+		</div>
+	</div>
+	
+	<div class="col-md-10" ng-if="$ctrl.loading">
+		<div class="col-md-5"></div>
+		<div class="col-md-3">
+			<img class="loading" src="images/loading.gif"></img>
+		</div>
+		<div class="col-md-4" />
+	</div>
+</div>
+<!-- <div class="row">
+		<div class="col-md-6">
+			<nvd3 options="$ctrl.blkioOptions" data="$ctrl.blkioDataset"
+				class="with-3d-shadow with-transitions"forceY: "[0]"></nvd3>
+		</div>
+		<div class="col-md-6">
+			<nvd3 options="$ctrl.networkOptions" data="$ctrl.networkDataset"
+				class="with-3d-shadow with-transitions" forceY: "[0]"></nvd3>
+		</div>
+	</div> -->

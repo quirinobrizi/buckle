@@ -1,0 +1,100 @@
+<div class="container-fluid">
+    <div class="modal-header">
+        <button class="modal-close pull-right cursor-pointer" ng-click="$ctrl.cancel()">
+            <span class="glyphicon glyphicon-remove"></span>
+        </button>
+        <div class="modal-title" id="modal-title">
+            <span>{{$ctrl.container.name}}</span>
+            <span class="pull-right">{{$ctrl.container.config.Hostname}}</span>
+        </div>
+    </div>
+    <div class="modal-body" id="modal-body">
+        <div class="row">
+            <div class="col-md-12 widget">
+                <div class="body row">
+
+                    <div class="col-md-12 widget top-margin-20px">
+                        <div class="body">
+                            <div ng-repeat="(key, value) in $ctrl.container track by $index" ng-if="key != 'statistics' && key != 'anomalies'" class="element-row"
+                                data-fittext data-fittext-min="10" data-fittext-max="12">
+
+                                <div ng-if="$ctrl.isObject(value)">
+                                    <div class="title" ng-click="collapsed=!collapsed">
+                                        <span>{{key}}</span>
+                                        <span class="pull-right glyphicon glyphicon-expand cursor-pointer"></span>
+                                    </div>
+                                    <div ng-show="collapsed">
+                                        <div ng-repeat="(key1, value1) in value" class="element-row" data-fittext data-fittext-min="10" data-fittext-max="12">
+
+                                            <div ng-if="$ctrl.isObject(value1)">
+                                                <div class="title" ng-click="collapsed1=!collapsed1">
+                                                    <span>{{key1}}</span>
+                                                    <span class="pull-right glyphicon glyphicon-expand cursor-pointer"></span>
+                                                </div>
+                                                <div ng-show="collapsed1">
+                                                    <div ng-repeat="(key2, value2) in value1 track by $index" class="element-row" data-fittext data-fittext-min="10" data-fittext-max="12">
+
+                                                        <div ng-if="$ctrl.isObject(value2)">
+                                                            <div class="title" ng-click="collapsed2=!collapsed2">
+                                                                <span>{{key2}}</span>
+                                                                <span class="pull-right glyphicon glyphicon-expand cursor-pointer"></span>
+                                                            </div>
+                                                            <div ng-show="collapsed2">
+                                                                <div ng-repeat="(key3, value3) in value2 track by $index" class="element-row" data-fittext data-fittext-min="10" data-fittext-max="12">
+
+                                                                    <form class="form">
+                                                                        <div class="form-group form-group-sm">
+                                                                            <div class="input-group input-group-sm">
+                                                                                <span class="input-group-addon">{{key3}}</span>
+                                                                                <input type="text" class="form-control" id="targetNumberOfContainers" ng-value="value3" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <form class="form" ng-if="!$ctrl.isObject(value2)">
+                                                            <div class="form-group form-group-sm">
+                                                                <div class="input-group input-group-sm">
+                                                                    <span class="input-group-addon">{{key2}}</span>
+                                                                    <input type="text" class="form-control" id="targetNumberOfContainers" ng-value="value2" readonly>
+                                                                </div>
+                                                            </div>
+                                                        </form>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <form class="form" ng-if="!$ctrl.isObject(value1)">
+                                                <div class="form-group form-group-sm">
+                                                    <div class="input-group input-group-sm">
+                                                        <span class="input-group-addon">{{key1}}</span>
+                                                        <input type="text" class="form-control" id="targetNumberOfContainers" ng-value="value1" readonly>
+                                                    </div>
+                                                </div>
+                                            </form>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <form class="form" ng-if="!$ctrl.isObject(value)">
+                                    <div class="form-group form-group-sm">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-addon">{{key}}</span>
+                                            <input type="text" class="form-control" id="targetNumberOfContainers" ng-value="value" readonly>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer" data-fittext data-fittext-min="10" data-fittext-max="inherit">
+                    <span>{{$ctrl.container.Id}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

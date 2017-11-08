@@ -1,0 +1,37 @@
+<div class="container-fluid">
+	<div class="modal-header">
+		<button class="modal-close pull-right cursor-pointer"
+			ng-click="$ctrl.cancel()">
+			<span class="glyphicon glyphicon-remove"></span>
+		</button>
+		<div class="modal-title" id="modal-title">
+			<span>Deploy clusters</span>
+		</div>
+	</div>
+	<div class="modal-body" id="modal-body">
+		<form class="form">
+			<div class="form-group form-group-sm"
+				ng-repeat="cluster in $ctrl.clusters"
+				ng-if="cluster.name !== undefined">
+				<label class="sr-only" for="imageTagToDeploy">Tags</label>
+				<div class="input-group input-group-sm">
+					<span class="input-group-addon"> <input
+						id="{{cluster.name}}" type="checkbox" aria-label="..."
+						ng-checked="selected">
+					</span> <select class="form-control" id="imageTagToDeploy"
+						ng-model="selectedTag"
+						ng-change="selected = true; $ctrl.selectedClusters.push({tag: selectedTag, name: cluster.name});">
+						<option ng-repeat="tag in cluster.tags" value="{{tag}}">{{tag}}</option>
+					</select> <span class="text-right input-group-addon min-width-185px">
+						{{cluster.name}} </span>
+				</div>
+			</div>
+		</form>
+	</div>
+	<div class="modal-footer">
+		<button class="btn btn-default" type="button" ng-click="$ctrl.ok()">
+			<span class="glyphicon glyphicon-circle-arrow-up" aria-hidden="true"></span>
+			Deploy
+		</button>
+	</div>
+</div>

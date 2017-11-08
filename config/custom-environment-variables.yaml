@@ -1,0 +1,49 @@
+buckle:
+  http:
+    enabled: BUCKLE_HTTP_ENABLED
+    port: BUCKLE_HTTP_PORT
+  https:
+    enabled: BUCKLE_HTTPS_ENABLED
+    port: BUCKLE_HTTPS_PORT
+    ca: BUCKLE_HTTPS_CA
+    key: BUCKLE_HTTPS_KEY
+    cert: BUCKLE_HTTPS_CERT
+  cometd:
+    enabled: BUCKLE_COMETD_ENABLED
+  eureka:
+    enabled: BUCKLE_EUREKA_ENABLED
+    ip: BUCKLE_EUREKA_LOCAL_IP
+    port: BUCKLE_EUREKA_PORT
+    host: BUCKLE_EUREKA_HOST
+    name: BUCKLE_EUREKA_APP_NAME
+  authentication:
+    jwt:
+      secret: BUCKLE_JWT_SECRET # The secret or key applied for the JWT token generation
+    verifier:
+      type: BUCKLE_VERIFIER_TYPE
+      client:
+        id: BUCKLE_CLIENT_ID
+        secret: BUCKLE_CLIENT_SECRET
+      accessTokenUri: BUCKLE_ACCESS_TOKEN_URI
+      scopes: BUCKLE_SCOPES
+      db: BUCKLE_VERIFIER_DB
+      contentType: BUCKLE_VERIFIER_REMOTE_CONTENT_TYPE
+  user:
+    profile:
+      retrieve: BUCKLE_PROFILE_RETRIEVE
+      referer: BUCKLE_PROFILE_REFERER
+      uri: BUCKLE_PROFILE_URI
+      firstName: BUCKLE_PROFILE_FIRST_NAME
+      lastName: BUCKLE_PROFILE_LAST_NAME
+      picture: BUCKLE_PROFILE_PICTURE
+docker:
+  registry:         # Define docker registry configuration
+    uri: BUCKLE_DOCKER_REG_URI
+    password: BUCKLE_DOCKER_REG_PWD
+    username: BUCKLE_DOCKER_REG_USR
+    email: BUCKLE_DOCKER_REG_EMAIL
+  engine:           # Define docker engine configuration
+    uri: BUCKLE_DOCKER_ENG_URI
+    cert: BUCKLE_DOCKER_ENG_CERT
+    key: BUCKLE_DOCKER_ENG_KEY
+    ca: BUCKLE_DOCKER_ENG_CA

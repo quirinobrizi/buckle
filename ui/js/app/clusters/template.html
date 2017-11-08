@@ -1,0 +1,149 @@
+<div class="row page">
+	<div class="col-md-2">
+		<sidebar></sidebar>
+	</div>
+	
+	<div class="col-md-10">
+			<nav class="navbar navbar-default">
+				<div class="collapse navbar-collapse" id="bs-navbar-collapse-1">
+					<ul class="nav navbar-nav">
+						<li><span class="btn-group" role="group">
+								<button type="submit" class="btn navbar-btn btn-default"
+									ng-click="$ctrl.openDeployClustersModal($ctrl.clusters);"
+									aria-label="Deploy containers" title="Deploy containers">
+									<span class="glyphicon glyphicon-circle-arrow-up"
+										aria-hidden="true"></span> Deploy
+								</button>
+						</span></li>
+						<ul>
+				</div>
+			</nav>
+
+			<div ng-if="!$ctrl.loading && !$ctrl.serverError">
+				<div class="row">
+					<div class="col-md-6">
+						<span class="input-group" role="group"> <span
+							class="input-group-addon">Search by Cluster</span> <input
+							type="text" class="form-control" placeholder="Search cluster"
+							ng-model="cluster.name" />
+						</span>
+					</div>
+					<div class="col-md-6">
+						<span class="input-group" role="group"> <span
+							class="input-group-addon">Search by Node</span> <input
+							type="text" class="form-control" placeholder="Search node"
+							ng-model="cluster.containers.node" />
+						</span>
+					</div>
+				</div>
+				<div class="row top-margin-20px">
+					<div class="col-md-6 widget"
+						ng-repeat="cluster in $ctrl.clusters | filter:cluster | orderBy: cluster.name"
+						ng-if="cluster.name !== undefined">
+						<div class="title" data-fittext data-fittext-min="6"
+							data-fittext-max="inherit">
+							<span>{{cluster.name}}</span><span class="badge pull-right">{{cluster.containers.length}}</span>
+						</div>
+						<div class="body fixed-height-140px">
+							<div class="clearfix element-row"
+								ng-repeat="container in cluster.containers"
+								data-toggle="tooltip" title="{{container.version}}">
+								<div>
+									<span class="font-size-80pct font-bold alert version"
+										ng-class="container.state == 'running' ? ' alert-success' : 'alert-danger'"
+										role="alert">{{container.version}}
+										({{container.status}})</span> <span class="pull-right btn-group"
+										role="group">
+										<button ng-if="container.hasAnomalies" type="submit"
+											class="btn btn-danger"
+											ng-click="$ctrl.openContainerAnomaliesModal(cluster.name, container.id);"
+											aria-label="View container anomalies"
+											title="View container anomalies">
+											<span class="glyphicon glyphicon-warning-sign cursor-pointer"
+												aria-hidden="true"></span>
+										</button>
+										<button ng-if="container.hasStatistics" type="submit"
+											class="btn btn-info"
+											ng-click="$ctrl.openContainerStatisticsModal(cluster.name, container.id);"
+											aria-label="View container statistics"
+											title="View container statistics">
+											<span class="glyphicon glyphicon-stats cursor-pointer"
+												aria-hidden="true"></span>
+										</button>
+										<button type="submit" class="btn btn-info"
+											ng-click="$ctrl.openContainerInfoModal(cluster.name, container.id);"
+											aria-label="Get detailed container info"
+											title="Get detailed container info">
+											<span class="glyphicon glyphicon-info-sign cursor-pointer"
+												aria-hidden="true"></span>
+										</button>
+										<button type="submit" class="btn btn-default"
+											ng-click="$ctrl.deleteContainer(cluster.name, container.id);"
+											aria-label="Delete container" title="Delete container">
+											<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+										</button>
+									</span>
+								</div>
+							</div>
+						</div>
+						<div class="footer">
+							<form class="form">
+								<div class="form-group form-group-sm">
+									<label class="sr-only" for="targetNumberOfContainers">Containers</label>
+									<div class="input-group input-group-sm">
+										<span class="input-group-addon">Num</span> <input type="text"
+											class="form-control" id="targetNumberOfContainers"
+											placeholder="Containers" ng-model="cardinality"> <span
+											class="input-group-btn">
+											<button type="submit" class="btn btn-default"
+												ng-click="$ctrl.scaleClusterContainers(cardinality, cluster.containers);"
+												aria-label="Scale containers on this group to the requested number"
+												title="Scale containers on this group to the requested number">
+												<span class="glyphicon glyphicon-scale"></span>
+											</button>
+										</span>
+									</div>
+								</div>
+
+								<div class="form-group form-group-sm">
+									<label class="sr-only" for="imageTagToDeploy">Tags</label>
+									<div class="input-group input-group-sm">
+										<span class="input-group-addon">Tag</span> <select
+											class="form-control" id="imageTagToDeploy"
+											ng-model="selectedTag">
+											<option ng-repeat="tag in cluster.tags" value="{{tag}}"
+												ng-selected="{{tag == cluster.containers[0].version}}">{{tag}}</option>
+										</select> <span class="input-group-btn">
+											<button type="submit" class="btn btn-default"
+												ng-click="$ctrl.deployClusterContainers(cluster.containers[0], selectedTag, cluster.containers.length);"
+												aria-label="Deploy the selected new version for all containers on this group"
+												title="Deploy the selected new version for all containers on this group">
+												<span class="glyphicon glyphicon-circle-arrow-up"></span>
+											</button>
+										</span>
+									</div>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div ng-if="$ctrl.loading">
+				<div class="col-md-5"></div>
+				<div class="col-md-3">
+					<img class="loading" src="images/loading.gif"></img>
+				</div>
+				<div class="col-md-4" />
+			</div>
+
+			<div ng-if="$ctrl.serverError">
+				<div class="col-md-5"></div>
+				<div class="col-md-3">
+					<h1>OOPS!</h1>
+					<p>Something broke!</p>
+				</div>
+				<div class="col-md-4"></div>
+			</div>
+	</div>
+</div>

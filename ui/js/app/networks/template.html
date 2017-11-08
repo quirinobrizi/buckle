@@ -1,0 +1,89 @@
+<div class="row page">
+	<div class="col-md-2">
+		<sidebar></sidebar>
+	</div>
+	<div class="col-md-10">
+		<!-- <nav class="navbar navbar-default">
+			<div class="collapse navbar-collapse" id="bs-navbar-collapse-1">
+				<ul class="nav navbar-nav">
+					<li>
+						<span class="btn-group" role="group">
+							<button type="submit" class="btn navbar-btn btn-default" ng-click="$ctrl.openDeployClustersModal($ctrl.clusters);"
+							 aria-label="Deploy containers"
+							 title="Deploy containers">
+								 <span class="glyphicon glyphicon-circle-arrow-up" aria-hidden="true"></span>
+								 Deploy
+							</button>
+						</span>
+					</li>
+				<ul>
+			</div>
+		</nav> -->
+
+		<div ng-if="!$ctrl.loading">
+			<div class="row">
+				<div class="col-md-6">
+					<span class="input-group" role="group"> <span
+						class="input-group-addon">Search by Network</span> <input
+						type="text" class="form-control" placeholder="Search by Network"
+						ng-model="network.Name" />
+					</span>
+				</div>
+				<div class="col-md-6">
+					<span class="input-group" role="group"> <span
+						class="input-group-addon">Search by Driver</span> <input
+						type="text" class="form-control" placeholder="Search Driver"
+						ng-model="network.Driver" />
+					</span>
+				</div>
+			</div>
+			<div class="row top-margin-20px">
+				<div class="col-md-6 widget"
+					ng-repeat="network in $ctrl.networks | filter:network">
+					<div class="title" data-fittext data-fittext-min="6"
+						data-fittext-max="inherit">
+						<span>{{network.Name}}</span><span class="badge pull-right">{{Object.keys(network.Containers).length}}</span>
+					</div>
+					<div class="body fixed-height-100px">
+						<div class="clearfix element-row">
+							<div class="network">
+								<span class="glyphicon glyphicon-info-sign text-info"></span> <span
+									class="font-bold capitalise">Driver</span> <span
+									class="badge pull-right">{{network.Driver}}</span>
+							</div>
+							<div class="network">
+								<span class="glyphicon glyphicon-info-sign text-info"></span> <span
+									class="font-bold capitalise">Attached Containers</span> <span
+									class="badge pull-right">{{$ctrl.length(network.Containers)}}</span>
+							</div>
+						</div>
+					</div>
+					<div class="footer">
+						<span class="btn-group btn-group-sm" role="group">
+							<button type="submit" class="btn btn-info"
+								ng-click="$ctrl.openNetworkInfoModal(network.Id);"
+								aria-label="Get detailed network info"
+								title="Get detailed network info">
+								<span class="glyphicon glyphicon-info-sign cursor-pointer"
+									aria-hidden="true"></span>
+							</button>
+							<button type="submit" class="btn"
+								ng-click="$ctrl.deleteNetwork(network.Id);"
+								aria-label="Delete network" title="Delete network">
+								<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+							</button>
+						</span>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div ng-if="$ctrl.loading">
+			<div class="col-md-5" />
+			<div class="col-md-3">
+				<img class="loading" src="images/loading.gif"></img>
+			</div>
+			<div class="col-md-4" />
+		</div>
+	</div>
+</div>

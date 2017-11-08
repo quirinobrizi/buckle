@@ -1,0 +1,112 @@
+<div class="row page">
+	<div class="col-md-2">
+		<sidebar></sidebar>
+	</div>
+
+	<div class="col-md-10">
+		<!-- <div class="container-fluid"> -->
+
+		<div ng-if="!$ctrl.loading">
+			<div class="row">
+				<div class="col-md-12 widget">
+					<div class="title">
+						<span class="glyphicon glyphicon-briefcase"></span> <span>System</span>
+					</div>
+					<div class="body">
+						<div class="clearfix statistics"
+							ng-repeat="(key,value) in $ctrl.statistics.system">
+							<span class="glyphicon glyphicon-info-sign text-info"></span> <span
+								class="capitalise">{{key}}</span><span class="pull-right">{{value}}</span>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<!-- Cluster Statistics -->
+				<div class="col-md-6 widget">
+					<div class="title">
+						<span class="glyphicon glyphicon-tasks"></span> <span>Containers</span><span
+							class="badge pull-right">{{$ctrl.statistics.containers.number}}</span>
+					</div>
+					<div class="body fixed-height-120px">
+						<div class="clearfix statistics">
+							<span class="glyphicon glyphicon-thumbs-up text-success"></span>
+							<span class="capitalise">Running Containers</span><span
+								class="badge pull-right">{{$ctrl.statistics.containers.running}}</span>
+						</div>
+						<div class="clearfix statistics">
+							<span class="glyphicon glyphicon-thumbs-down text-danger"></span>
+							<span class="capitalise">Stopped Containers</span><span
+								class="badge pull-right">{{$ctrl.statistics.containers.stopped}}</span>
+						</div>
+						<div class="clearfix statistics">
+							<span class="glyphicon glyphicon-info-sign text-info"></span> <span
+								class="capitalise">Paused Containers</span> <span
+								class="badge pull-right">
+								{{$ctrl.statistics.containers.paused}}</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-md-6 widget">
+					<div class="title">
+						<span class="glyphicon glyphicon-hdd"></span> <span>Volumes</span><span
+							class="badge pull-right">{{$ctrl.statistics.volumes.number}}</span>
+					</div>
+					<div class="body fixed-height-120px">
+						<div class="clearfix statistics"
+							ng-repeat="(driver,count) in $ctrl.statistics.volumes.drivers">
+							<span class="glyphicon glyphicon-hdd text-info"></span> <span
+								class="capitalise">{{driver}}</span><span
+								class="badge pull-right">{{count}}</span>
+						</div>
+					</div>
+				</div>
+
+			</div>
+
+			<div class="row">
+				<!-- Networks Statistics -->
+				<div class="col-md-6 widget">
+					<div class="title">
+						<span class="glyphicon glyphicon-signal"></span> <span>Networks</span><span
+							class="badge pull-right">{{$ctrl.statistics.networks.number}}</span>
+					</div>
+					<div class="body fixed-height-120px">
+						<div class="clearfix statistics"
+							ng-repeat="(driver,count) in $ctrl.statistics.networks.drivers">
+							<span class="glyphicon glyphicon-info-sign text-info"></span> <span
+								class="capitalise">{{driver}}</span><span
+								class="badge pull-right">{{count}}</span>
+						</div>
+					</div>
+				</div>
+
+				<!-- Images Statistics -->
+				<div class="col-md-6 widget">
+					<div class="title">
+						<span class="glyphicon glyphicon-unchecked"></span> <span>Images</span><span
+							class="badge pull-right">{{$ctrl.statistics.images.number}}</span>
+					</div>
+					<div class="body fixed-height-120px">
+						<div class="clearfix statistics"
+							ng-repeat="(tag,count) in $ctrl.statistics.images.tags">
+							<span class="glyphicon glyphicon-info-sign text-info"></span> <span>{{tag}}</span><span
+								class="badge pull-right">{{count}}</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div ng-if="$ctrl.loading">
+			<div class="col-md-5" />
+			<div class="col-md-3">
+				<img class="loading" src="images/loading.gif"></img>
+			</div>
+			<div class="col-md-4" />
+		</div>
+		<!-- </div> -->
+	</div>
+</div>

@@ -1,0 +1,22 @@
+<div class="container-fluid">
+
+	<div class="modal-header">
+		<button class="modal-close pull-right cursor-pointer"
+			ng-click="$ctrl.cancel()">
+			<span class="glyphicon glyphicon-remove"></span>
+		</button>
+		<div class="modal-title" id="modal-title">
+			<span>Anomalies</span>
+		</div>
+	</div>
+
+	<div class="modal-body" id="modal-body">
+		<div class="row">
+			<div ng-repeat="anomaly in $ctrl.anomalies">
+				<span class="col-md-4">{{anomaly.type}}</span> <span
+					class="col-md-8">{{anomaly.params.message}}</span>
+			</div>
+		</div>
+	</div>
+
+</div>

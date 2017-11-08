@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# git checkout master
+# git pull origin master
+
+NEW_VERSION=$1
+VERSION=$(cat package.json | grep version | awk '{split($0,a,"\""); print a[4]}')
+echo "building Buckle version $VERSION"
+
+get_payload()
+{
+  cat <<EOF
+{
+  "tag_name": "v${VERSION}",
+  "target_commitish": "master",
+  "name": "v${VERSION}",
+  "body": "Buckle release ${VERSION}",
+  "draft": false,
+  "prerelease": false
+}
+EOF
+}
+
+echo "$(get_payload)"
+
+echo "Performing release on github"
+curl -k -XPOST --user "$2:$3" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  "https://api.github.com/repos/quirinobrizi/buckle/releases" \
+  --data "$(get_payload)" -vvv
+if [ $? -ne 0 ]; then
+  echo "unable to perform release on github"
+  exit 1
+fi
+#
+# echo "Building docker image"
+# docker build -t quirinobrizi/buckle:$VERSION .
+# echo "Push docker image to dockerhub"
+# docker push quirinobrizi/buckle:$VERSION
+
+echo "Update version to ${NEW_VERSION}"
+search='("version":[[:space:]]*").+(")'
+replace="\1${NEW_VERSION}\2"
+sed -E "s/${search}/${replace}/g" "package.json" > "package.json.tmp"
+mv package.json.tmp package.json

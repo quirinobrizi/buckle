@@ -1,0 +1,13 @@
+{
+  "logging": {
+    "application": {
+      "console": {
+        "level": "info",
+        "colorize": true,
+        "timestamp": true,
+        "json": false,
+        "splat": true
+      }
+    }
+  }
+}

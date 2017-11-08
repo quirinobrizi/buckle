@@ -1,0 +1,134 @@
+#!/usr/bin/env node
+
+/*******************************************************************************
+ * Copyright [2017] [Quirino Brizi (quirino.brizi@gmail.com)]
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ ******************************************************************************/
+
+'use strict'
+
+const shell = require('shelljs');
+const format = require('util').format;
+
+module.exports = class Driver {
+
+    constructor() {
+        this.machine = process.env.MACHINE_PATH || 'docker-machine';
+    }
+
+    /**
+     * Create a machine of the requested type, master or node
+     * @param {string} type the type of machine to create
+     * @param {array} specs the specifications to use creatin the machine
+     * @param {string} env the environment the machine is created for
+     * @return {string} the name of the create machine
+     */
+    create(type, specs, env) {
+        var cmd = this.build(specs);
+        var name = format("%s-buckle-%s-%s", env, type, Date.now());
+        var command = format("%s create --driver %s %s %s", this.machine, this.name(), cmd, name);
+        console.log("create command %s", command);
+        if (this.execute(command).code != 0) {
+            throw Error(format("unable to create a machine of type %s", type));
+        }
+        return name;
+    }
+
+    /**
+     * Retrieve the machie IP Addres
+     * @param  {string} machine the machine name
+     * @return {string}         the machine IP Address
+     */
+    ipAddress(machine) {
+        let result = this.execute(format("%s ip %s", this.machine, this._sanitize(machine)));
+        if (result.code != 0) {
+            throw Error(format("unable to create a machine of type %s", type));
+        }
+        return result.stdout;
+    }
+
+    /**
+     * Initialize the swarm on the requested machine advertising on the requested IP Adress
+     * @param  {string} machine the machine name
+     * @param  {string} ip      the advertise IP Address
+     * @return {string}         the command output
+     */
+    initializeSwarm(machine, ip) {
+        // docker-machine ssh manager-1 docker swarm init --listen-addr ${manager_ip} --advertise-addr ${manager_ip}
+        let sanitizedIp = this._sanitize(ip);
+        let command = format("%s ssh %s docker swarm init --listen-addr %s --advertise-addr %s", this.machine, machine, sanitizedIp, sanitizedIp);
+        console.log("init swarm command %s",command);
+        let result = this.execute(command);
+        if (result.code != 0) {
+            throw Error(format("unable to create a machine of type %s", type));
+        }
+        return result.stdout;
+    }
+
+    /**
+     * Allow to join an already initialized swarm
+     * @param  {string} machine     the name of the current machine
+     * @param  {string} ip               the IP address of the machine to add to the swarm
+     * @param  {string} token        the verification token to use to join the master
+     * @param  {string} managerIp   the manager IP address
+     * @param  {number} managerPort the manager port
+     * @return {sting}               the command output
+     */
+    joinSwarm(machine, ip, token, managerIp, managerPort) {
+        // docker-machine ssh ${name} docker swarm join --listen-addr ${ip} --advertise-addr ${ip} --token ${manager_token} ${manager_ip}:2377
+        let sanitizedIp = this._sanitize(ip);
+        let command = format("%s ssh %s docker swarm join --listen-addr %s --advertise-addr %s --token %s %s:%s", this.machine, this._sanitize(machine), sanitizedIp, sanitizedIp, this._sanitize(token), this._sanitize(managerIp), managerPort);
+        console.log("join swarm command %s",command);
+        let result = this.execute(command);
+        if (result.code != 0) {
+            throw Error(format("unable to create a machine of type %s", type));
+        }
+        return result.stdout;
+    }
+
+    /**
+     * Get a token needed to join the swarm
+     * @param  {[type]} machine [description]
+     * @param  {[type]} type    [description]
+     * @return {[type]}         [description]
+     */
+    token(machine, type) {
+        let result = this.execute(format("%s ssh %s docker swarm join-token -q  %s", this.machine, this._sanitize(machine), this._sanitize(type)));
+        if (result.code != 0) {
+            throw Error(format("unable to create a machine of type %s", type));
+        }
+        return result.stdout;
+    }
+
+    /**
+     * Execute the requested command and return its exit code
+     * @param  {string} command the command to execute
+     * @return {object}         the execution information
+     */
+    execute(command) {
+        return shell.exec(command);
+    }
+
+    name() {
+        throw new TypeError("name method must be overwriten");
+    }
+
+    build() {
+        throw new TypeError("build method must be overwriten");
+    }
+
+    _sanitize(value) {
+        return value.replace(/\r?\n|\r/g, "");
+    }
+}

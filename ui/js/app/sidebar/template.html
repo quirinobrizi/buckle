@@ -1,0 +1,39 @@
+<div class="sidebar" ng-show="$ctrl.authenticated">
+	<!-- SIDEBAR USERPIC -->
+	<div class="nav-logo">
+		<img src="images/buckle_logo.png" class="img-responsive" alt="">
+	</div>
+	<!-- END SIDEBAR USERPIC -->
+	<!-- SIDEBAR USER TITLE -->
+	<div class="nav-usertitle">
+		<div class="nav-usertitle-name"><span>{{$ctrl.user.username}}</span></div>
+		<!-- <div class="profile-usertitle-job">
+    						Developer
+    					</div> -->
+	</div>
+	<!-- END SIDEBAR USER TITLE -->
+	<!-- SIDEBAR BUTTONS -->
+	<div class="nav-buttons">
+		<button type="button" class="btn btn-success btn-sm" ng-click="$ctrl.logout()">Logout</button>
+		<!-- <button type="button" class="btn btn-danger btn-sm">Message</button> -->
+	</div>
+	<!-- END SIDEBAR BUTTONS -->
+	<!-- SIDEBAR MENU -->
+	<div class="nav-menu">
+		<ul class="nav">
+			<li><a href="#!/dashboard"> <i
+					class="glyphicon glyphicon-home"></i> Dashboard
+			</a></li>
+			<li><a href="#!/clusters"> <i
+					class="glyphicon glyphicon-tasks"></i> Clusters
+			</a></li>
+			<li><a href="#!/networks"> <i
+					class="glyphicon glyphicon-signal"></i> Networks
+			</a></li>
+			<li><a href="#!/statistics"> <i
+					class="glyphicon glyphicon-stats"></i> Statistics
+			</a></li>
+		</ul>
+	</div>
+	<!-- END MENU -->
+</div>

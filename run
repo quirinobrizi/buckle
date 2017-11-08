@@ -1,0 +1,8 @@
+#!/bin/bash
+
+docker ps -aq | xargs docker stop
+docker ps -aq | xargs docker rm -fv
+docker image ls | grep buckle | grep development | awk '{print $3}' | xargs docker image rm -f
+
+docker build -t quirinobrizi/buckle:development -f ./Dockerfile.dev .
+docker-compose -f $1 up
