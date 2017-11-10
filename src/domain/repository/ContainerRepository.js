@@ -102,7 +102,7 @@ module.exports = class ContainerRepository {
             var containers = await this.dockerEngineClient.getContainersByName(name);
             var containerInfo = await this.dockerEngineClient.inspectContainer(containers[0].Id);
             var image = /([^:]*):?(.*)$/g.exec(this._extractImage(containerInfo))[1];
-            var config = new ScaleContainerAdaptor().adapt(containerInfo, util.format("%s:%s", image, tag), name);
+            var config = new ScaleContainerAdaptor().adapt(containerInfo, image, tag, name);
             var startBeforeDelete = this._hasHostExposedPorts(containerInfo);
             var targetCardinality = cardinality == -1 || cardinality == 0 ? containers.length : cardinality;
             logger.info("pulling image %s", image);

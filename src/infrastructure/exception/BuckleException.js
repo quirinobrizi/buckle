@@ -16,37 +16,22 @@
 
 'use strict'
 
-module.exports = class Event {
+module.exports = class BuckleException extends Error {
 
-    constructor(id, type, action, time, actor) {
-        this.id = id;
-        this.type = type;
-        this.action = action;
-        this.time = time;
-        this.actor = actor;
+    constructor(message, payload, status) {
+        super(message);
+        this.name = this.constructor.name;
+        Error.captureStackTrace(this, this.constructor);
+
+        this.status = status || 500;
+        this.payload = payload;
     }
 
-    getId() {
-        return this.id;
+    getStatus() {
+        return this.status;
     }
 
-    getType() {
-        return this.type;
-    }
-
-    getAction() {
-        return this.action;
-    }
-
-    getTime() {
-        return this.time;
-    }
-
-    getActor() {
-        return this.actor;
-    }
-
-    static newInstance(id, type, action, time, actor) {
-        return new Event(id, type, action, time, actor);
+    getPayload() {
+        return this.payload;
     }
 }

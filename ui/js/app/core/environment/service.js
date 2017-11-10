@@ -50,7 +50,7 @@ angular.module('core.environment').service('Environment', ['Bus', function (Bus)
 
     return {
         getStatistics: function (cluster, container) {
-            return containers[container].statistics;
+            return containers[container].statistics.sort(function(a,b){ return a.timestamp - b.timestamp; });
         },
 
         getAnomalies: function (cluster, container) {

@@ -16,37 +16,14 @@
 
 'use strict'
 
-module.exports = class Event {
-
-    constructor(id, type, action, time, actor) {
-        this.id = id;
-        this.type = type;
-        this.action = action;
-        this.time = time;
-        this.actor = actor;
+module.exports = class DockerEngineException extends require('./BuckleException') {
+    
+    constructor(status, error, body) {
+        super("transaction with docker engine failed", body, status);
+        this.error = error;
     }
 
-    getId() {
-        return this.id;
+    getError() {
+        return this.error;
     }
-
-    getType() {
-        return this.type;
-    }
-
-    getAction() {
-        return this.action;
-    }
-
-    getTime() {
-        return this.time;
-    }
-
-    getActor() {
-        return this.actor;
-    }
-
-    static newInstance(id, type, action, time, actor) {
-        return new Event(id, type, action, time, actor);
-    }
-}
+};

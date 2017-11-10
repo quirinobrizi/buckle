@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright [2017] [Quirino Brizi (quirino.brizi@gmail.com)]
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -16,20 +16,25 @@
 
 'use strict'
 
+const util = require('util');
+
 const logger = require('../Logger');
 
 module.exports = class ScaleContainerAdaptor {
     constructor() {}
 
-    adapt(inputs, image, clusterId) {
-        logger.info("adapting container info for scale container request with image %s", image);
+    adapt(inputs, image, tag, clusterId) {
+        logger.info("adapting container info for scale container request with image %s and tag %s", image, tag);
         if (logger.debug) {
             logger.debug("Current container configuration: %s", JSON.stringify(inputs));
         }
         try {
             var labels = Object.assign({
-                'org.buckle.version': '1'
+                'org.buckle.version': '1',
+                'org.buckle.cluster': clusterId,
+                'org.buckle.cluster.container.version': tag
             }, inputs.Config.Labels);
+
             var config = {
                 Domainname: inputs.Config.Domainname,
                 User: inputs.Config.User,
@@ -44,7 +49,7 @@ module.exports = class ScaleContainerAdaptor {
                 Cmd: inputs.Config.Cmd,
                 Healthcheck: inputs.Healthcheck,
                 ArgsEscaped: inputs.ArgsEscaped,
-                Image: image,
+                Image: util.format("%s:%s", image, tag),
                 Volumes: inputs.Config.Volumes,
                 WorkingDir: inputs.Config.WorkingDir,
                 Entrypoint: inputs.Config.Entrypoint,

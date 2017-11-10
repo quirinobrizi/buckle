@@ -130,7 +130,7 @@ module.exports = class ClusterInterface {
 
         router.delete('/clusters/:clusterId/containers/:containerId', function(req, res) {
             self.containerService.deleteContainer(req.params.containerId).then(container => {
-                res.send(self.containerMessageTranslator.translate(container));
+                res.status(200).json(container);
             }).catch(e => {
                 apiHelper.handleApiError(e, req, res);
             });

@@ -426,7 +426,7 @@ module.exports = class Container {
     }
 
     _addCpuConfigIfNeeded(config, cpuQuota) {
-        if(this.hasAnomalies() && !this.hasAnomaliesOfType(["cpu"])) {
+        if(cpuQuota < 95000 && this.hasAnomalies() && !this.hasAnomaliesOfType(["cpu"])) {
             return;
         }
         config.CpuPeriod = metricsHelper.ONE_SEC_IN_JIFFY;

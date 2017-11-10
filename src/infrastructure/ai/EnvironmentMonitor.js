@@ -61,23 +61,26 @@ module.exports = class EnvironmentMonitor {
                     }
                 });
             })
-            .catch(console.error);
+            .catch(logger.error);
     }
 
     _registerEventListeners() {
         var self = this;
         this.eventEmitter.on('container.start', event => {
-            self.monitor();
+            self.containerRepository.getContainer(event.getId())
+                .then(self._listenForRealizationOnContainer)
+                .catch(function(e) {
+                    logger.warn("unable to add new container to realization listener", e);
+                })
         });
         this.eventEmitter.on('container.destroy', event => {
             self._updateRealizationCollector();
         });
     }
 
-
     _listenForRealizationOnContainer(container) {
         if (!this.environmentService.alreadyObserves(container)) {
-            console.log("adding [%s] [%s] for realization collection", container.getName(), container.getContainerId());
+            logger.log("adding [%s] [%s] for realization collection", container.getName(), container.getContainerId());
             this.containerRepository
                 .registerRealizationListener(container.getContainerId(), new RealizationReceiver(this.eventEmitter), console.error);
         }
@@ -89,6 +92,6 @@ module.exports = class EnvironmentMonitor {
             .then(containers => {
                 self.environmentService.removeOrphans(containers);
             })
-            .catch(console.error);
+            .catch(logger.error);
     }
 };

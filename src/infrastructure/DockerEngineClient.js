@@ -161,7 +161,7 @@ module.exports = class DockerEngineClient {
                     if (!containerMatch) {
                         containerMatch = /.*_(.*)_.*/g.exec(_name);
                     }
-                    if(!containerMatch) {
+                    if (!containerMatch) {
                         containerMatch = /\/(.*)\.\d+\..*/g.exec(_name)
                     }
                     var currentName = containerMatch ? containerMatch[2] || containerMatch[1] : name.replace(/^\//, '');
@@ -438,9 +438,13 @@ module.exports = class DockerEngineClient {
                     function (e, r, b) {
                         try {
                             let answer = self._handler(e, r, b);
-                            self.cache.set(options.url, answer);
+                            if (options.method === 'GET') {
+                                self.cache.set(options.url, answer);
+                            }
                             resolve(answer);
-                        } catch (e) { reject(e); }
+                        } catch (e) {
+                            reject(e);
+                        }
                     });
             }
         });
@@ -514,41 +518,48 @@ module.exports = class DockerEngineClient {
                         logger.info('container [%s] deleted', target.Id);
                         self.createContainer(config, getName).then(newContainer => {
                             logger.info('new container %s created, starting it', newContainer.Id);
-                            self.startContainer(newContainer.Id).then(r => {
-                                // TODO: QB need health check the service
-                                // running on the
-                                // container
-                                console.log("new container started [%s]", newContainer.Id, target.Id);
-                                if (targets.length === idx + 1) {
-                                    resolve({
-                                        message: "done"
-                                    });
-                                }
-                            }).catch(reject);
+                            self.startContainer(newContainer.Id)
+                                .then(r => {
+                                    // TODO: QB need health check the service running on the container
+                                    console.log("new container started [%s]", newContainer.Id, target.Id);
+                                    if (targets.length === idx + 1) {
+                                        resolve({ message: "done" });
+                                    }
+                                })
+                                .catch(reject);
                         }).catch(reject);
                     }).catch(reject);
                 } else {
                     self.createContainer(config, getName).then(newContainer => {
                         logger.info('new container %s created, starting it', newContainer.Id);
                         self.startContainer(newContainer.Id).then(r => {
-                            // TODO: QB need health check the service running on
-                            // the container
+                            // TODO: QB need health check the service running on the container
                             logger.info("new container started [%s], waiting 60 seconds before removing [%s]", newContainer.Id, target.Id);
-                            wait.sleep(60000).then(function () {
-                                self.deleteContainer(target.Id).then(r => {
-                                    console.log('container [%s] deleted', target.Id);
-                                    if (targets.length === idx + 1) {
-                                        resolve({
-                                            message: "done"
-                                        });
-                                    }
+                            self._waitForContainerToStartAndDeleteOld(target.Id, targets, resolve, reject);
+                        }).catch(function(e) {
+                            logger.warn("create container failed, retry");
+                            self.startContainer(newContainer.Id)
+                                .then(r => {
+                                    logger.info("new container started [%s], waiting 60 seconds before removing [%s]", newContainer.Id, target.Id);
+                                    self._waitForContainerToStartAndDeleteOld(idx, target.Id, targets, resolve, reject);
                                 }).catch(reject);
-                            }).catch(reject);
-                        }).catch(reject);
+                        });
                     }).catch(reject);
                 }
             });
         });
+    }
+
+    _waitForContainerToStartAndDeleteOld(idx, current, targets, resolve, reject) {
+        var self = this;
+        wait.sleep(60000).then(function () {
+            self.deleteContainer(current).then(r => {
+                console.log('container [%s] deleted', current);
+                if (targets.length === idx + 1) {
+                    resolve({ message: "done" });
+                }
+            }).catch(reject);
+        }).catch(reject);
     }
 
 };
