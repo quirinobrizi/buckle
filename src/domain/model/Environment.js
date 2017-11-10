@@ -445,6 +445,9 @@ module.exports = class Environment {
 
     async _doInspectRealizationsForAnomalies(realization, anomalyService) {
         let container = this.getContainer(realization.getContainerId());
+        if(!container.hasBeenUpdatedAtLeastSecondsAgo(10)) {
+            return [];
+        }
         logger.debug("inspecting realization for container %s", container.getName());
         container.addRealization(realization);
         let foundAnomalies = await container.inspect(anomalyService);

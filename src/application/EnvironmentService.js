@@ -68,12 +68,12 @@ module.exports = class EnvironmentService {
      * @param  {Realization}            realization the received realization
      */
     async evaluateRealization(realization) {
-        if (!this.containers[realization.getContainerId()] ||
-            (Date.now() - this.containers[realization.getContainerId()].lastEvaluate) > 1000) {
-
+        if (!this.containers[realization.getContainerId()]) {
             let environment = await this.environmentRepository.get();
             let containers = await environment.inspectRealizationsForAnomalies(realization, this.anomalyService);
-            this.eventEmitter.emit('containers.updated', containers);
+            if(containers.length > 0) {
+                this.eventEmitter.emit('containers.updated', containers);
+            }
             this.containers[realization.getContainerId()] = {
                 lastEvaluate: Date.now()
             };

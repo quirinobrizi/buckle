@@ -315,6 +315,10 @@ module.exports = class Container {
         return answer;
     }
 
+    hasBeenUpdatedAtLeastSecondsAgo(seconds) {
+        return Math.trunc((Date.now() - this.lastUpdate) / 1000) >= seconds
+    }
+
     /**
      * Inspect this container for anomalies
      * @param  {AnomalyService]} anomalyService the service to use for the anomalies inspection
