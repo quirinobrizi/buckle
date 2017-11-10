@@ -98,6 +98,7 @@ module.exports = class ContainerRepository {
      */
     async deploy(name, tag, recreate, cardinality) {
         try {
+            logger.info("deploying container %s at version %s with cardinality %s", name, tag, cardinality);
             var containers = await this.dockerEngineClient.getContainersByName(name);
             var containerInfo = await this.dockerEngineClient.inspectContainer(containers[0].Id);
             var image = /([^:]*):?(.*)$/g.exec(this._extractImage(containerInfo))[1];
@@ -116,6 +117,7 @@ module.exports = class ContainerRepository {
             logger.info("container %s deployed at version %s with cardinality %s", name, tag, targetCardinality);
             return true;
         } catch (e) {
+            console.log(e.stack);
             logger.error("unable to deploy requested container %s", e);
             return false;
         }

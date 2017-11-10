@@ -77,31 +77,31 @@ buckle:
     listeners:            # Custom event listeners
 docker:
   registry:         # Define docker registry configuration
-    uri: https://localhost/registry           # The docker registry URL
+    uri: https://hub.docker.com/           # The docker registry URL
     password:       # The docker registry password
     username:       # The docker registry username
     email:          # The docker registry email
   engine:           # Define docker engine configuration
-    uri:            # The docker engine URL
+    uri: https://192.168.99.100:2376           # The docker engine URL
     cert: |
-      -----BEGIN CERTIFICATE-----
-      MIIC7zCCAdegAwIBAgIQKrj4AaTjcdb8241ZHy9+eDANBgkqhkiG9w0BAQsFADAS
-      MRAwDgYDVQQKEwdxdWlyaW5vMB4XDTE2MDEyMjA5MjAwMFoXDTE5MDEwNjA5MjAw
-      MFowHjEcMBoGA1UECgwTcXVpcmluby48Ym9vdHN0cmFwPjCCASIwDQYJKoZIhvcN
-      AQEBBQADggEPADCCAQoCggEBAMmQbmf8gF0WReoEd4DKGbiD1A7G840ZL4zp46RG
-      JaZ6R+V4ocWoZ+OxkW2bw5Wdq4yFBYc1cycLaDGKV94+y6Jh4nbJQEWEIerZGucQ
-      Q4AoGh34icolQ7Rd0yBLSoriFgsvPfDzhYyVaRPEWPtN2n3bxz7Td1jzjCZNH4Ht
-      m6ahuDuqKr2GainlN58tdSDaEbjt3eGtqz5l2HDWQMR8wjfmAi333ACC0j6vEjnX
-      sFrhI9u4WioNXO9yrZd1wQUW1aW/TreyWgasgE87dknh5K4SD3giUxpJ4n0U7bik
-      Tx7afUsT8oqs5oTDr2leiXhnv5OVrNTQPpBgdq2YudTacEECAwEAAaM1MDMwDgYD
-      VR0PAQH/BAQDAgeAMBMGA1UdJQQMMAoGCCsGAQUFBwMCMAwGA1UdEwEB/wQCMAAw
-      DQYJKoZIhvcNAQELBQADggEBAEN3afSJH1vZqjLRAxIWIfrr7YzlD25fafzqWFQT
-      hRoze94Edr2WuQojdzKS3Qr73YtuezqukWg1DtQxljWBrdkEMtf1ZjV957HfvBVV
-      2DfHxtR61Oe6HiFt9uKeooDCSdW/S759yrMc51mNudjaK0lBidux8GWPw2QviLtb
-      msw1eSRNnCz+R8dFOK3pJYzqmHeoGqxAwEm0GR9qnfb7yzNLf0+6dLjM8s/r7v4M
-      1ssmdu7EfOp4SKD92BLYZSv+ybikHPx/DnsRwtVRXMhlr2pg6og3vhboRC+zFq4W
-      2BzZ7d2D7YcEvhJwNo1XRtTuD7hmbl8Sc4IALBOqST9JsVU=
-      -----END CERTIFICATE-----
+        -----BEGIN CERTIFICATE-----
+        MIIC/DCCAeSgAwIBAgIRAMwoIZONOCy9s29YjjvOa5cwDQYJKoZIhvcNAQELBQAw
+        GDEWMBQGA1UEChMNcXVpcmluby5icml6aTAeFw0xNzExMDIyMTIxMDBaFw0yMDEw
+        MTcyMTIxMDBaMCQxIjAgBgNVBAoMGXF1aXJpbm8uYnJpemkuPGJvb3RzdHJhcD4w
+        ggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCjS7Vm3Zp/DVJayx7yNA3Q
+        fzmsShmWu8gewA6vASOMY9bhkeqjMtRWdd98N8GWBkblP2wPjXyv08NnlNXYRcIW
+        889GsmmRkUMvVnU9c6YXLylB9FHD9igTXDNgRBNPpir5zt9zINIuxomFMdIklVYi
+        aZ5vWJ8hX8v5ueSz5UtrW7N6q3tu3xh/meGgdI+ZI8S1wVMJDMPgc+ko5NfRTPKy
+        EZZTh5lej5NP7rgel0mjub/AYglt0r1OpPnCdr8d4zf0HoQdvIw142E65nrsUbxd
+        fko2hBVnbBs64NBMHjzuyF44UktXNFJQERlHKSvRdm3OM810qR/PFIurx4l/hZ4D
+        AgMBAAGjNTAzMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAjAM
+        BgNVHRMBAf8EAjAAMA0GCSqGSIb3DQEBCwUAA4IBAQA/uY9kyC022RnSU8TQSSSX
+        kN1nSjSekEM5z/9cSOX+XuIc+hVx/i9J1oKitYpGaxQSZ/JBS7FFSUHoYYMC38ll
+        YrAqQGTwbh250sSSB2KXOszzbkGMzZ+A3nXjJT1GXUJ/kECIN2UQJORqB7jEXbpf
+        K8kzGCt9zjI73VSbcCwaREmmTKyvmZVzsInfZg1I4bL4iq9ODQYJPEB/naU63qD6
+        iqqNDQaTGb0z0pMQpv2AnTr3fmKNulSsBeMofODoiztD5cS1PTogYauERfyt3vfe
+        HWFi+FCrUP0hXxt83UEkQr5U7COe5e6vsWvDahjeJivleDOPGPu2BkXPXa+Veatp
+        -----END CERTIFICATE-----
     key: |
         -----BEGIN RSA PRIVATE KEY-----
         MIIEogIBAAKCAQEAo0u1Zt2afw1SWsse8jQN0H85rEoZlrvIHsAOrwEjjGPW4ZHq

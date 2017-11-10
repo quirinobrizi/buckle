@@ -153,13 +153,20 @@ module.exports = class DockerEngineClient {
         return new Promise((resolve, reject) => {
             self.listContainers().then(containers => {
                 var targets = containers.filter(function (container) {
-                    var containerMatch = /\/(.*)\/(?:[a-zA-Z0-9]+_){0,1}([a-zA-Z0-9-]+)/g.exec(container.Names[0]);
-                    if (!containerMatch) {
-                        containerMatch = /.*_(.*)_.*/g.exec(container.Names[0]);
+                    var _name = container.Name;
+                    if (!_name) {
+                        _name = container.Names[0];
                     }
-                    var getName = containerMatch[2] || containerMatch[1];
-                    logger.debug("comparing current [%s] and requested [%s]", getName, name);
-                    return getName === name;
+                    var containerMatch = /\/(.*)\/(?:[a-zA-Z0-9]+_){0,1}([a-zA-Z0-9-]+)/g.exec(_name);
+                    if (!containerMatch) {
+                        containerMatch = /.*_(.*)_.*/g.exec(_name);
+                    }
+                    if(!containerMatch) {
+                        containerMatch = /\/(.*)\.\d+\..*/g.exec(_name)
+                    }
+                    var currentName = containerMatch ? containerMatch[2] || containerMatch[1] : name.replace(/^\//, '');
+                    logger.debug("comparing current [%s] and requested [%s]", currentName, name);
+                    return currentName === name;
                 });
                 resolve(targets);
             }).catch(reject);
