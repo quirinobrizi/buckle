@@ -21,6 +21,7 @@ const util = require('util');
 const capitalize = require('capitalize');
 
 const Event = require('../../domain/model/Event');
+const logger = require('../Logger');
 
 var EventReceiver = function(eventEmitter) {
 
@@ -30,7 +31,7 @@ var EventReceiver = function(eventEmitter) {
     this.write = function(chunk) {
         try {
             var event = JSON.parse(chunk.toString('utf8'));
-            console.log("******** Event %s", chunk.toString('utf8'));
+            logger.debug("Received event %s", chunk.toString('utf8'));
             this.eventEmitter.emit(util.format("%s.%s", event.Type, event.Action), Event.newInstance(event.id,
                 event.Type, event.Action, event.time * 1000, event.Actor));
         } catch (e) {

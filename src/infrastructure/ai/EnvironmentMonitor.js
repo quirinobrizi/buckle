@@ -67,8 +67,8 @@ module.exports = class EnvironmentMonitor {
     _registerEventListeners() {
         var self = this;
         this.eventEmitter.on('container.start', event => {
-            self.containerRepository.getContainer(event.getId())
-                .then(self._listenForRealizationOnContainer)
+            self.containerRepository.get(event.getId())
+                .then(c => { self._listenForRealizationOnContainer(c) })
                 .catch(function(e) {
                     logger.warn("unable to add new container to realization listener", e);
                 })

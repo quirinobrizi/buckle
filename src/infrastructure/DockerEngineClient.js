@@ -440,6 +440,8 @@ module.exports = class DockerEngineClient {
                             let answer = self._handler(e, r, b);
                             if (options.method === 'GET') {
                                 self.cache.set(options.url, answer);
+                            } else {
+                                self.cache.clear();
                             }
                             resolve(answer);
                         } catch (e) {

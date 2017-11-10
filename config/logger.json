@@ -3,7 +3,7 @@
     "application": {
       "console": {
         "level": "info",
-        "colorize": true,
+        "colorize": false,
         "timestamp": true,
         "json": false,
         "splat": true
