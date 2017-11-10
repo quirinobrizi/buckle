@@ -69,7 +69,7 @@ angular.module('statistics').component('statistics', {
 
         self._buildChartsData = function () {
             var now = Date.now();
-            if (now - lastUpdate < 1000) {
+            if (now - lastUpdate < 5000) {
                 return false;
             }
             lastUpdate = now;
