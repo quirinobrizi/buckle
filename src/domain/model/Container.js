@@ -43,6 +43,7 @@ module.exports = class Container {
         this.anomalies = [];
         this.maxRealizationCollectionTime = 180000;
         this.lastUpdate = 0;
+        this.lastInspection = 0;
     }
 
     /**
@@ -315,8 +316,10 @@ module.exports = class Container {
         return answer;
     }
 
-    hasBeenUpdatedAtLeastSecondsAgo(seconds) {
-        return Math.trunc((Date.now() - this.lastUpdate) / 1000) >= seconds
+    hasBeenInspectedAtLeastSecondsAgo(seconds) {
+        let secondsSince = Math.trunc((Date.now() - this.lastInspection) / 1000);
+        logger.info("seconds since last inspection %s, requested %s", secondsSince, seconds);
+        return secondsSince >= seconds
     }
 
     /**
@@ -325,6 +328,7 @@ module.exports = class Container {
      * @return {Boolean} true if the container has anomalies, false otherwise
      */
     async inspect(anomalyService) {
+        this.lastInspection = Date.now();
         this.anomalies = await anomalyService.process(this);
         logger.debug("anomalies inspection terminated, container %s has anomalies %s, %s", this.getName(), this.hasAnomalies(), JSON.stringify(this.anomalies));
         return this.hasAnomalies();
@@ -363,9 +367,9 @@ module.exports = class Container {
 
     defaultResourceRequirements() {
         let answer = new Map()
-        answer.set(this, {
-            cpu: this.calculateRequiredCpuQuota(),
-            memory: this.calculateRequiredMemory()
+        answer.set(this.getContainerId(), {
+                cpu: this.calculateRequiredCpuQuota(),
+                memory: this.calculateRequiredMemory()
         });
         return answer;
     }
@@ -430,7 +434,7 @@ module.exports = class Container {
     }
 
     _addCpuConfigIfNeeded(config, cpuQuota) {
-        if(cpuQuota < 95000 && this.hasAnomalies() && !this.hasAnomaliesOfType(["cpu"])) {
+        if (cpuQuota < 95000 && this.hasAnomalies() && !this.hasAnomaliesOfType(["cpu"])) {
             return;
         }
         config.CpuPeriod = metricsHelper.ONE_SEC_IN_JIFFY;
@@ -441,7 +445,7 @@ module.exports = class Container {
     }
 
     _addMemoryConfigIfNeeded(config, memory) {
-        if(this.hasAnomalies() && !this.hasAnomaliesOfType(["memory"])) {
+        if (this.hasAnomalies() && !this.hasAnomaliesOfType(["memory"])) {
             return;
         }
         config.MemoryReservation = metricsHelper.calculateMemoryReservation(memory, MEMORY_RESERVATION_INCREMENT_PCT, MIN_MEMORY_RESERVATION);

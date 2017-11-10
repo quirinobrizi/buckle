@@ -33,6 +33,9 @@ module.exports = class ContainerMessageTranslator {
      * @return {ContainerMessage} the message exchanged with dexternal services
      */
     translate(container) {
+        if(!container) {
+            return null;
+        }
         var realizations = this.realizationMessageTranslator.translate(container.getRealizations());
         var anomalies = this.anomaliesMessageTranslator.translate(container.getAnomalies());
         return new ContainerMessage(container.getContainerId(), container.getName())

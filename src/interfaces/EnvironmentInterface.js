@@ -43,9 +43,9 @@ module.exports = class EnvironmentInterface {
     }
 
     receive(stats) {
-        if (logger.debug) {
-            logger.debug('received new realization event %s', JSON.stringify(stats));
-        }
+        // if (logger.debug) {
+        //     logger.debug('received new realization event %s', JSON.stringify(stats));
+        // }
         this.environmentService.evaluateRealization(this.realizationTranslator.translate(stats));
     }
 

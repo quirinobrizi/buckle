@@ -445,15 +445,17 @@ module.exports = class Environment {
 
     async _doInspectRealizationsForAnomalies(realization, anomalyService) {
         let container = this.getContainer(realization.getContainerId());
-        if(!container.hasBeenUpdatedAtLeastSecondsAgo(10)) {
-            return [];
-        }
         logger.debug("inspecting realization for container %s", container.getName());
         container.addRealization(realization);
+        // if(!container.hasBeenInspectedAtLeastSecondsAgo(10)) {
+        //     logger.info("container has been inpsected less that 10 sec ago, skipping it");
+        //     return [];
+        // }
+        // logger.info("container has been inpsected more that 10 sec ago");
         let foundAnomalies = await container.inspect(anomalyService);
         if (foundAnomalies) {
             logger.info("found anomalies on container %s", container.getName());
-            let node = container.getNode();
+            let node = null; // container.getNode();
             let containerRequirements;
             if (node) {
                 containerRequirements = await this.getNode(node).distributeResources();
@@ -464,7 +466,8 @@ module.exports = class Environment {
             } else {
                 containerRequirements = container.defaultResourceRequirements();
             }
-            for (let [container, requirement] of containerRequirements) {
+            for (let [containerId, requirement] of containerRequirements) {
+                let container = this.getContainer(containerId);
                 let limits = await container.updateLimits(this.containerRepository, requirement);
                 realization.setAllocatedCpu(limits.cpu);
                 this.containerRepository.save(container);

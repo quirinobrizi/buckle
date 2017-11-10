@@ -16,6 +16,7 @@
 
 'use strict'
 
+const logger = require('../../Logger');
 var ContainerMessageTranslator = require('../../translator/ContainerMessageTranslator');
 
 module.exports = class CometdListener {
@@ -30,10 +31,14 @@ module.exports = class CometdListener {
     register() {
         var self = this;
         this.eventEmitter.on('containers.updated', containers => {
-            //console.log("updated %s contaners, sending notification", JSON.stringify(containers));
+            // console.log("updated %s contaners, sending notification", JSON.stringify(containers));
             for (var i = 0; i < containers.length; i++) {
                 let container = containers[i];
-                self._emitAsEvent('container.updated', this.containerMessageTranslator.translate(container));
+                try {
+                    self._emitAsEvent('container.updated', this.containerMessageTranslator.translate(container));
+                } catch (e) {
+                    logger.error('unable to send notification', e)
+                }
             }
         });
         // this.eventEmitter.on('container.anomalies.detected', container => {
