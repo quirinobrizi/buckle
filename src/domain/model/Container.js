@@ -124,6 +124,10 @@ module.exports = class Container {
         return this;
     }
 
+    getConfig() {
+        return this.config;
+    }
+
     /**
      * Allow to provide network configuration in a fluent style.
      *
@@ -224,6 +228,7 @@ module.exports = class Container {
     addRealization(stats) {
         this.realizations.push(stats);
         if (this.realizations[0].getTimestamp() < (Date.now() - this.maxRealizationCollectionTime)) {
+            logger.debug("removing realization as it is expired");
             this.realizations.splice(0, 1);
         }
         return this;
@@ -329,16 +334,21 @@ module.exports = class Container {
      * @return {boolean} true if the container has been updated. false otherwise;
      */
     async updateLimits(containerRepository, requirements) {
-        var secondsSinceLastUpdate = Math.trunc((Date.now() - this.lastUpdate) / 1000);
+        let secondsSinceLastUpdate = Math.trunc((Date.now() - this.lastUpdate) / 1000);
         logger.info('updating container %s last update %s seconds ago [%s - %s]', this.name, secondsSinceLastUpdate, Date.now(), this.lastUpdate);
-        this.lastUpdate = Date.now();
         try {
-            var resp = await containerRepository.update(this.id, this.buildLimitsConfiguration(requirements));
+            let limits = this.buildLimitsConfiguration(requirements);
+            let resp = await containerRepository.update(this.id, limits);
             logger.info("container %s configuration updated %s", this.name, JSON.stringify(resp));
-            return true;
+            return {
+                cpu: this.getCpuLimit(),
+                memory: limits.Memory
+            };
         } catch (e) {
             logger.error("unable to update container %s %s", this.getName(), e.stack);
             return false;
+        } finally {
+            this.lastUpdate = Date.now();
         }
     }
 

@@ -16,7 +16,7 @@
 
 'use strict'
 
-module.exports = class ContainerMessageTranslator {
+module.exports = class ContainerMessage {
 
     constructor(id, name) {
         this.id = id;
@@ -30,6 +30,19 @@ module.exports = class ContainerMessageTranslator {
         this.ipAddress =  null;
         this.image = null;
         this.version = null;
+
+        this.config = null;
+        this.hostConfig = null;
+    }
+
+    setConfig(config) {
+        this.config = config;
+        return this;
+    }
+
+    setHostConfig(hostConfig) {
+        this.hostConfig = hostConfig;
+        return this;
     }
 
     setStatus(status) {

@@ -44,6 +44,8 @@ module.exports = class ContainerMessageTranslator {
             .setVersion(container.containerVersion())
             .setIpAddress(container.getIpAddress())
             .setRealizations(realizations)
-            .setAnomalies(anomalies);
+            .setAnomalies(anomalies)
+            .setConfig(container.getConfig())
+            .setHostConfig(container.getHostConfig());
     }
 }

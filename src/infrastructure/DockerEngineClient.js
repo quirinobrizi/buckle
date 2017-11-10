@@ -21,6 +21,8 @@ const util = require('util');
 const wait = require('wait-promise');
 const logger = require('./Logger');
 
+const DockerEngineException = require('./exception/DockerEngineException');
+
 module.exports = class DockerEngineClient {
 
     constructor(configuration, eventEmitter, cache) {
@@ -421,18 +423,23 @@ module.exports = class DockerEngineClient {
         return new Promise(function (resolve, reject) {
             let data = self.cache.get(options.url);
             if (data) {
+                logger.debug("cache hit for %s", options.url);
                 return resolve(data);
             } else {
                 request(
                     options,
                     function (e, r, b) {
-                        self._handler(e, r, b, _event, resolve, reject);
+                        try {
+                            let answer = self._handler(e, r, b);
+                            self.cache.set(options.url, answer);
+                            resolve(answer);
+                        } catch (e) { reject(e); }
                     });
             }
         });
     }
 
-    _handler(e, r, b, _event, resolve, reject) {
+    _handler(e, r, b) {
         // console.log("handling response from docker engine. Error: [%j]
         // Response:
         // [%j] Body: [%j]", e,r,b);
@@ -445,31 +452,37 @@ module.exports = class DockerEngineClient {
                     message: b
                 };
             }
-            return reject({
-                statusCode: statusCode,
-                error: e || b
-            });
+            throw new DockerEngineException(statusCode, e, b);
         }
-        // if (_event) {
-        //     this.eventEmitter.emit(_event, b);
-        // }
-        resolve(b);
+        return b;
     }
 
-    _options(url, method, qs, config) {
+    /**
+     * Prepare the HTTP request options
+     * @param  {string} url    the URL of the resource to contact
+     * @param  {string} method The HTTP method
+     * @param  {Object} qs     The query string parameters as a object
+     * @param  {Object} body   The request body to send to the target URL
+     * @return {object}        The request options
+     */
+    _options(url, method, qs, body) {
         return {
             url: url,
             json: true,
             headers: {
                 'X-Registry-Auth': this.registryAuthentication,
-                'Accept': "application/json"
+                'Accept': "application/json",
+                'User-Agent': "Buckle"
             },
             qs: qs || {},
-            body: config,
+            body: body,
             method: method || 'GET',
             cert: this.cert,
             ca: this.ca,
-            key: this.key
+            key: this.key,
+            agentOptions: {
+                securityOptions: 'SSL_OP_NO_SSLv3'
+            }
         };
     }
 

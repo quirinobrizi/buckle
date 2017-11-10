@@ -100,7 +100,7 @@ module.exports = class ContainerRepository {
         try {
             var containers = await this.dockerEngineClient.getContainersByName(name);
             var containerInfo = await this.dockerEngineClient.inspectContainer(containers[0].Id);
-            var image = /([^:]*):?(.*)$/g.exec(containers[0].Image)[1];
+            var image = /([^:]*):?(.*)$/g.exec(this._extractImage(containerInfo))[1];
             var config = new ScaleContainerAdaptor().adapt(containerInfo, util.format("%s:%s", image, tag), name);
             var startBeforeDelete = this._hasHostExposedPorts(containerInfo);
             var targetCardinality = cardinality == -1 || cardinality == 0 ? containers.length : cardinality;
@@ -119,6 +119,13 @@ module.exports = class ContainerRepository {
             logger.error("unable to deploy requested container %s", e);
             return false;
         }
+    }
+
+    _extractImage(container) {
+        if(container.Image.startsWith("sha256")) {
+            return container.Config.Image;
+        }
+        return container.Image
     }
 
     _hasHostExposedPorts(container) {

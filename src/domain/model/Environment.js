@@ -15,6 +15,7 @@
  ******************************************************************************/
 
 'use strict'
+const AsyncLock = require('async-lock');
 
 const logger = require('../../infrastructure/Logger');
 
@@ -52,6 +53,7 @@ module.exports = class Environment {
         this.kernelVersion = ""
 
         this.containerRepository = null;
+        this.lock = new AsyncLock();
     }
 
     getName() {
@@ -434,6 +436,14 @@ module.exports = class Environment {
      * @return {Array.<Container>}      the list of update containers if any
      */
     async inspectRealizationsForAnomalies(realization, anomalyService) {
+        let containerId = realization.getContainerId();
+        var self = this;
+        return await this.lock.acquire(containerId, async function() {
+            return await self._doInspectRealizationsForAnomalies(realization, anomalyService)
+        });
+    }
+
+    async _doInspectRealizationsForAnomalies(realization, anomalyService) {
         let container = this.getContainer(realization.getContainerId());
         logger.debug("inspecting realization for container %s", container.getName());
         container.addRealization(realization);
@@ -448,14 +458,12 @@ module.exports = class Environment {
                 if (containerRequirements.size == 0) {
                     containerRequirements = container.defaultResourceRequirements();
                 }
-                // let containers = this.getContainersOnNode(node);
-                // containerRequirements = await container.getNode().distributeResources(containers);
             } else {
                 containerRequirements = container.defaultResourceRequirements();
             }
             for (let [container, requirement] of containerRequirements) {
-                await container.updateLimits(this.containerRepository, requirement);
-                realization.setAllocatedCpu(container.getCpuLimit());
+                let limits = await container.updateLimits(this.containerRepository, requirement);
+                realization.setAllocatedCpu(limits.cpu);
                 this.containerRepository.save(container);
             }
             return Array.from(containerRequirements.keys());

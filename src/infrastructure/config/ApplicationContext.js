@@ -21,7 +21,7 @@ const EventEmitter = new require('events').EventEmitter;
 const NanoCache = require('nano-cache');
 
 const EnvironmentMonitor = require('../ai/EnvironmentMonitor');
-const AnomalyAnalyzer = require('../ai/anomaly/analyzer');
+const AnomalyAnalyzer = require('../ai/anomaly/AnomalyAnalyzer');
 const RestRoutesBuilder = require('../../interfaces/RestRoutesBuilder');
 const DockerRegistryClient = require('../DockerRegistryClient');
 const DockerEngineClient = require('../DockerEngineClient');

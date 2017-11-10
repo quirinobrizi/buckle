@@ -25,7 +25,7 @@ module.exports = class ContainerTranslator {
     }
 
     translate(container) {
-        var answer = new Container(container.Id, this._extractName(container), container.Image);
+        var answer = new Container(container.Id, this._extractName(container), this._extractImage(container));
         answer.setHostConfig(container.HostConfig)
             .setConfig(container.Config)
             .setNetworkSettings(container.NetworkSettings)
@@ -34,6 +34,13 @@ module.exports = class ContainerTranslator {
             .setNode(this._extractNode(container))
             .setCreatedTimestamp(typeof container.Created === 'string' ?  Date.parse(container.Created) : container.Created * 1000);
         return answer;
+    }
+
+    _extractImage(container) {
+        if(container.Image.startsWith("sha256")) {
+            return container.Config ? container.Config.Image : 'unknown';
+        }
+        return container.Image
     }
 
     _extractState(state) {
@@ -60,7 +67,7 @@ module.exports = class ContainerTranslator {
 
     _extractNode(container) {
         if(container.Node) {
-            return container.Node.ID || container.Node.Name 
+            return container.Node.ID || container.Node.Name
         } else {
             var name = container.Name;
             if (!name) {
