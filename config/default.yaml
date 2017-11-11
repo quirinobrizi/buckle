@@ -50,8 +50,6 @@ buckle:
       -----END RSA PRIVATE KEY-----
     ca: |
 
-  cometd:
-    enabled: true
   authentication:         # Define the authentication strategy, authentication is done using passport
                           # so verify function need to respect th efirm defined for the supported passport modules.
     jwt:

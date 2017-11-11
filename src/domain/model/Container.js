@@ -85,7 +85,7 @@ module.exports = class Container {
                 match = /^(.+)@.+/g.exec(this.image);
             }
         }
-        return match[2] || 'unknown';
+        return match[2] || 'latest';
     }
 
     /**

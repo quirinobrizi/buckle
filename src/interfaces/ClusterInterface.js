@@ -88,8 +88,12 @@ module.exports = class ClusterInterface {
                 name: req.params.clusterId,
                 cardinality: parseInt(req.body.cardinality || 1, 10),
                 tag: req.body.tag || 'latest'
-            }).then(response => {
-                res.status(200).json(response);
+            }).then(scaled => {
+                if(scaled) {
+                    res.status(200).json( { message: "cluster scaled" } );
+                } else {
+                    res.status(400).json({ message: "unable to scale cluster" });
+                }
             }).catch(e => {
                 apiHelper.handleApiError(e, req, res);
             });

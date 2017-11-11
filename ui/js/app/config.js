@@ -21,29 +21,24 @@ angular.module('buckle').config(
         function config($locationProvider, $routeProvider, growlProvider) {
             growlProvider.globalTimeToLive(5000);
             $locationProvider.hashPrefix('!');
-            $routeProvider.
-            // when('/clusters/:clusterId/container/:containerId', {
-            // template: '<container></container>'
-            // }).
-            when('/dashboard', {
-                template: '<dashboard></dashboard>'
-            }).when('/clusters', {
-                template: '<clusters></clusters>'
-            }).when('/authenticate', {
-                template: '<authenticate></authenticate>'
-            }).when('/networks', {
-                template: '<networks></networks>'
-            }).when('/statistics', {
-                template: '<statistics></statistics>'
-            }).otherwise('/authenticate');
+            $routeProvider
+                .when('/dashboard', { template: '<dashboard></dashboard>' })
+                .when('/clusters', { template: '<clusters></clusters>' })
+                .when('/authenticate', { template: '<authenticate></authenticate>'})
+                .when('/networks', { template: '<networks></networks>' })
+                .when('/statistics', { template: '<statistics></statistics>' })
+                .otherwise('/authenticate');
         }
-    ]).run(['Notify', 'growl', 'Bus', function (Notify, growl, Bus) {
-    Bus.listen('general.error', function (e, msg) {
-        growl.error(msg.error ? msg.error.message || "Unknown Error Detected" : JSON.stringify(msg));
+    ]).run(['Notify', 'growl', 'Bus', function(Notify, growl, Bus) {
+    Bus.listen('general.error', function(e, msg) {
+        let data = typeof msg === 'string' ? JSON.parse(msg) : msg;
+        let notification = data.error ? data.error.message || "Unknown Error Detected" :
+            data.message ? data.message : JSON.stringify(msg)
+        growl.error(notification);
     });
 
-    Notify.connect('/buckle/socket.io', function () {
-        Notify.subscribe('/topic/events', function (event) {
+    Notify.connect('/buckle/socket.io', function() {
+        Notify.subscribe('/topic/events', function(event) {
             if (!event.type) {
                 if (event.message) {
                     growl.info(event.message);
@@ -53,8 +48,8 @@ angular.module('buckle').config(
             }
         });
     });
-}]).service('TransactionInterceptor', ['$q', '$location', 'Token', 'Bus', function ($q, $location, Token, Bus) {
-    this.request = function (config) {
+}]).service('TransactionInterceptor', ['$q', '$location', 'Token', 'Bus', function($q, $location, Token, Bus) {
+    this.request = function(config) {
         if ('/authenticate' !== $location.path()) {
             if (Token.isAuthenticated()) {
                 var token = Token.get();
@@ -66,14 +61,16 @@ angular.module('buckle').config(
         }
         return config;
     };
-    this.responseError = function (response) {
+    this.responseError = function(response) {
         if (response.status === 401 || response.status === 403) {
             if ('/authenticate' === $location.path()) {
                 Token.clear();
                 $location.path('/login');
                 return $q.reject(response);
             } else {
-                return Bus.emit('general.error', { error: 'Login failed for ' + $location.path() });
+                return Bus.emit('general.error', {
+                    error: 'Login failed for ' + $location.path()
+                });
             }
         } else if (response.status === 400 || response.status > 403) {
             // Bus.emit('actio.runtime.error', response);
@@ -81,10 +78,10 @@ angular.module('buckle').config(
         }
         return $q.reject(response);
     };
-    this.response = function (response) {
+    this.response = function(response) {
         return response || $q.when(response);
     };
-}]).config(['$httpProvider', 'localStorageServiceProvider', function ($httpProvider, localStorageServiceProvider) {
+}]).config(['$httpProvider', 'localStorageServiceProvider', function($httpProvider, localStorageServiceProvider) {
     localStorageServiceProvider.setPrefix('buckle');
     $httpProvider.interceptors.push('TransactionInterceptor');
 }]);

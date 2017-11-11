@@ -24,7 +24,8 @@ module.exports = class ScaleContainerAdaptor {
     constructor() {}
 
     adapt(inputs, image, tag, clusterId) {
-        logger.info("adapting container info for scale container request with image %s and tag %s", image, tag);
+        var _tag = tag || 'latest';
+        logger.info("adapting container info for scale container request with image %s and tag %s", image, _tag);
         if (logger.debug) {
             logger.debug("Current container configuration: %s", JSON.stringify(inputs));
         }
@@ -32,7 +33,7 @@ module.exports = class ScaleContainerAdaptor {
             var labels = Object.assign({
                 'org.buckle.version': '1',
                 'org.buckle.cluster': clusterId,
-                'org.buckle.cluster.container.version': tag
+                'org.buckle.cluster.container.version': _tag
             }, inputs.Config.Labels);
 
             var config = {
@@ -49,7 +50,7 @@ module.exports = class ScaleContainerAdaptor {
                 Cmd: inputs.Config.Cmd,
                 Healthcheck: inputs.Healthcheck,
                 ArgsEscaped: inputs.ArgsEscaped,
-                Image: util.format("%s:%s", image, tag),
+                Image: util.format("%s:%s", image, _tag),
                 Volumes: inputs.Config.Volumes,
                 WorkingDir: inputs.Config.WorkingDir,
                 Entrypoint: inputs.Config.Entrypoint,
@@ -130,12 +131,7 @@ module.exports = class ScaleContainerAdaptor {
                     EndpointsConfig: {}
                 }
             };
-            config.NetworkingConfig.EndpointsConfig[inputs.HostConfig.NetworkMode] = {
-                Aliases: [
-                    clusterId
-                ],
-                Links: inputs.NetworkSettings.Networks[inputs.HostConfig.NetworkMode].Links
-            };
+            this._configureNetworking(config, inputs, clusterId);
             if (logger.debug) {
                 logger.debug('generated configuration [%j]', config);
             }
@@ -144,5 +140,25 @@ module.exports = class ScaleContainerAdaptor {
             logger.error(e);
             throw e;
         }
+    }
+
+    _configureNetworking(config, inputs, clusterId) {
+        var networks = inputs.NetworkSettings.Networks || {};
+        for (let key in networks) {
+            if(!networks.hasOwnProperty(key)) {
+                continue;
+            }
+            let network = networks[key];
+            if(!network) {
+                logger.info("unable to extract network %s", key);
+                continue;
+            }
+            logger.info("copying network configuration for %s actual config %s", key, JSON.stringify(network));
+            config.NetworkingConfig.EndpointsConfig[key] = {
+                Links: network.Links,
+                Aliases: !['default', 'bridge'].includes(key) ? network.Aliases ? network.Aliases.push(clusterId) : [clusterId] : null
+            };
+        }
+        return config;
     }
 }

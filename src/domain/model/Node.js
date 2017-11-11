@@ -248,7 +248,7 @@ module.exports = class Node {
 
         logger.info("Quotas: CPU: %s Memory: %s", maxCpuQuota, maxMemoryQuota);
         if(isNaN(maxCpuQuota) || isNaN(maxMemoryQuota)) {
-            return requirements
+            return requirements;
         }
 
         let excessRequiredBy = [];
@@ -266,7 +266,7 @@ module.exports = class Node {
 
             if(currentCpuExcess < 0 || currentMemoryExcess < 0) {
                 logger.info("container %s requires resources from above the standard qouta", container.getName())
-                excessRequiredBy.push(container);
+                excessRequiredBy.push(id);
             };
             if(currentCpuExcess > 0) {
                 cpuExcess += currentCpuExcess;
@@ -275,7 +275,7 @@ module.exports = class Node {
                 memoryExcess += currentMemoryExcess;
             }
 
-            requirements.set(container, {
+            requirements.set(id, {
                 cpu: cpuQuota,
                 memory: currentMemoryExcess >= 0 ? memoryQuota : currentMemoryExcess,
                 cpuExcess: currentCpuExcess,
@@ -284,9 +284,9 @@ module.exports = class Node {
         }
 
         for (let i = 0; i < excessRequiredBy.length; i++) {
-            let container = excessRequiredBy[i];
-            let requirement = requirements.get(container);
-            logger.info("container %s requires, CPU: %s, Memory: %s", container.getName(), requirement.cpu, requirement.memory);
+            let containerId = excessRequiredBy[i];
+            let requirement = requirements.get(containerId);
+            logger.info("container %s requires, CPU: %s, Memory: %s", containerId, requirement.cpu, requirement.memory);
             if(requirement.cpuExcess < 0) {
                 logger.info("available cpu excess: %s", cpuExcess);
                 if(Math.abs(requirement.cpuExcess) < cpuExcess) {

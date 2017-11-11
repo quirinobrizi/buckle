@@ -137,8 +137,9 @@ angular
                         templateUrl: 'js/app/clusters/containerInfoModal.html',
                         controllerAs: '$ctrl',
                         controller: function ($uibModalInstance, container) {
-                            delete container.statistics;
+                            delete container.realizations;
                             delete container.anomalies;
+
                             this.container = container;
                             this.cancel = function () {
                                 $uibModalInstance.dismiss('cancel');
@@ -399,7 +400,7 @@ angular
                 }
 
                 self._handleError = function (msg) {
-                    Bus.emit('general.error', msg);
+                    Bus.emit('general.error', msg.data || msg);
                 }
 
                 self._updateClusterState = function (e, msg) {

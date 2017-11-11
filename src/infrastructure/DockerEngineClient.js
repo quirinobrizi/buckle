@@ -19,8 +19,9 @@
 const request = require('request');
 const util = require('util');
 const wait = require('wait-promise');
-const logger = require('./Logger');
 
+const logger = require('./Logger');
+const containerHelper = require('./helper/ContainerHelper');
 const DockerEngineException = require('./exception/DockerEngineException');
 
 module.exports = class DockerEngineClient {
@@ -129,10 +130,11 @@ module.exports = class DockerEngineClient {
      */
     deleteContainer(container) {
         var self = this;
-        return new Promise(function (resolve, reject) {
+        return new Promise(function(resolve, reject) {
             self.stopContainer(container).then(r => {
                 logger.info("container %s stopped, response [%j]", container, r);
                 self.removeContainer(container).then(r => {
+                    logger.info("container %s removed, response [%j]", container, r);
                     resolve(util.format("container %s deleted", container));
                 }).catch(reject);
             }).catch(reject);
@@ -152,19 +154,8 @@ module.exports = class DockerEngineClient {
         var self = this;
         return new Promise((resolve, reject) => {
             self.listContainers().then(containers => {
-                var targets = containers.filter(function (container) {
-                    var _name = container.Name;
-                    if (!_name) {
-                        _name = container.Names[0];
-                    }
-                    var containerMatch = /\/(.*)\/(?:[a-zA-Z0-9]+_){0,1}([a-zA-Z0-9-]+)/g.exec(_name);
-                    if (!containerMatch) {
-                        containerMatch = /.*_(.*)_.*/g.exec(_name);
-                    }
-                    if (!containerMatch) {
-                        containerMatch = /\/(.*)\.\d+\..*/g.exec(_name)
-                    }
-                    var currentName = containerMatch ? containerMatch[2] || containerMatch[1] : name.replace(/^\//, '');
+                var targets = containers.filter(function(container) {
+                    var currentName = containerHelper.extractContainerName(container);
                     logger.debug("comparing current [%s] and requested [%s]", currentName, name);
                     return currentName === name;
                 });
@@ -191,17 +182,11 @@ module.exports = class DockerEngineClient {
      */
     deployOrScaleContainer(config, name, image, cardinality, recreate, startBeforeDelete) {
         var self = this;
-        var project = self._makeid();
-        return new Promise(function (resolve, reject) {
-            self.listContainers().then(containers => {
-                logger.info("Filtering containers started from image [%s]", image);
-                var targets = containers.filter(function (container) {
-                    var containerImage = /([^:]*):?(.*)$/g.exec(container.Image)[1];
-                    logger.info("evaluating container image [%j]", containerImage);
-                    return containerImage === image;
-                });
+        var project = self._makeid(name);
+        return new Promise(function(resolve, reject) {
+            self.getContainersByName(name).then(targets => {
                 // arder containers by crete date ascending
-                targets.sort(function (a, b) {
+                targets.sort(function(a, b) {
                     return a.Created - b.Created;
                 });
                 logger.debug("target containers [%j]", targets);
@@ -427,7 +412,7 @@ module.exports = class DockerEngineClient {
 
     _invoke(options, _event) {
         var self = this;
-        return new Promise(function (resolve, reject) {
+        return new Promise(function(resolve, reject) {
             let data = self.cache.get(options.url);
             if (data) {
                 logger.debug("cache hit for %s", options.url);
@@ -435,18 +420,16 @@ module.exports = class DockerEngineClient {
             } else {
                 request(
                     options,
-                    function (e, r, b) {
+                    function(e, r, b) {
+                        let answer = self._handler(e, r, b);
                         try {
-                            let answer = self._handler(e, r, b);
                             if (options.method === 'GET') {
                                 self.cache.set(options.url, answer);
                             } else {
                                 self.cache.clear();
                             }
-                            resolve(answer);
-                        } catch (e) {
-                            reject(e);
-                        }
+                        } catch (e) { /* ignore */ }
+                        resolve(answer);
                     });
             }
         });
@@ -525,7 +508,9 @@ module.exports = class DockerEngineClient {
                                     // TODO: QB need health check the service running on the container
                                     console.log("new container started [%s]", newContainer.Id, target.Id);
                                     if (targets.length === idx + 1) {
-                                        resolve({ message: "done" });
+                                        resolve({
+                                            message: "done"
+                                        });
                                     }
                                 })
                                 .catch(reject);
@@ -554,11 +539,13 @@ module.exports = class DockerEngineClient {
 
     _waitForContainerToStartAndDeleteOld(idx, current, targets, resolve, reject) {
         var self = this;
-        wait.sleep(60000).then(function () {
+        wait.sleep(60000).then(function() {
             self.deleteContainer(current).then(r => {
                 console.log('container [%s] deleted', current);
                 if (targets.length === idx + 1) {
-                    resolve({ message: "done" });
+                    resolve({
+                        message: "done"
+                    });
                 }
             }).catch(reject);
         }).catch(reject);

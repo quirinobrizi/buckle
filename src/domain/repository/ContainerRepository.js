@@ -104,6 +104,10 @@ module.exports = class ContainerRepository {
             var image = /([^:]*):?(.*)$/g.exec(this._extractImage(containerInfo))[1];
             var config = new ScaleContainerAdaptor().adapt(containerInfo, image, tag, name);
             var startBeforeDelete = this._hasHostExposedPorts(containerInfo);
+            if(cardinality > 0 && startBeforeDelete) {
+                logger.error("container cannot be scaled as there existing one has publicly exposed ports");
+                return false;
+            }
             var targetCardinality = cardinality == -1 || cardinality == 0 ? containers.length : cardinality;
             logger.info("pulling image %s", image);
             var pull = await this.dockerEngineClient.pullImage(image, tag);
@@ -133,15 +137,19 @@ module.exports = class ContainerRepository {
     _hasHostExposedPorts(container) {
         var bindings = container.HostConfig.PortBindings;
         if (bindings) {
-            console.log("Port bindings available for container [%s]", container.Id);
-            Object.keys(bindings).forEach(key => {
-                bindings[key].forEach(b => {
-                    if (b.HostPort) {
-                        console.log("container [%s] has at least one port exposed on the host [%s]", container.Id, b.HostPort);
-                        return true;
+            logger.info("Port bindings available for container [%s]", container.Id);
+            for (var key in bindings) {
+                if (bindings.hasOwnProperty(key)) {
+                    let binding = bindings[key];
+                    for (var i = 0; i < binding.length; i++) {
+                        let b = binding[i];
+                        if (b.HostPort) {
+                            logger.info("container [%s] has at least one port exposed on the host [%s]", container.Id, b.HostPort);
+                            return true;
+                        }
                     }
-                })
-            })
+                }
+            }
         }
         return false;
     }

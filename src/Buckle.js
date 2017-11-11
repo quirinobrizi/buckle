@@ -44,18 +44,13 @@ if (cluster.isMaster) {
 }
 
 function main() {
-    var app = express();
-    var io = null;
-    var server = null;
-    var listeners = config.buckle.event.listeners || [];
-    var router = express.Router();
-
+    let app = express();
+    let io = null;
+    let server = null;
+    let listeners = config.buckle.event.listeners || [];
+    listeners.push("../listener/Cometd");
+    let router = express.Router();
     let container = applicationContext.load(config);
-
-    if (config.buckle.cometd.enabled) {
-        listeners.push("./listener/cometd");
-    }
-
     app.use(bodyParser.json({
         type: 'application/json'
     }));
@@ -78,83 +73,61 @@ function main() {
     }
 
     if (config.buckle.http.enabled) {
-        const http = require('http');
-        if (config.buckle.cometd.enabled) {
-            server = http.createServer(app);
-            io = require('socket.io')(server, {
-                path: '/buckle/socket.io'
-            });
-            server.timeout = 600000;
-            server.listen(config.buckle.http.port || 8080);
-        } else {
-            server = http.createServer(app);
-            server.timeout = 600000;
-            server.listen(config.buckle.http.port || 8080);
-        }
+        let http = require('http');
+        server = http.createServer(app);
+        io = require('socket.io')(server, {
+            path: '/buckle/socket.io'
+        });
+        server.timeout = 600000;
+        server.listen(config.buckle.http.port || 8080);
     }
 
     if (config.buckle.https.enabled) {
-        const https = require('https');
-        if (config.buckle.cometd.enabled) {
-            server = https.createServer({
-                ca: [config.buckle.https.ca],
-                cert: config.buckle.https.cert,
-                key: config.buckle.https.key
-            }, app);
-            io = require('socket.io')(server);
-            server.timeout = 600000;
-            server.listen(config.buckle.https.port || 8443);
-        } else {
-            server = https.createServer({
-                ca: [config.buckle.https.ca],
-                cert: config.buckle.https.cert,
-                key: config.buckle.https.key
-            }, app);
-            server.timeout = 600000;
-            server.listen(config.buckle.https.port || 8443);
-        }
+        let https = require('https');
+        server = https.createServer({
+            ca: [config.buckle.https.ca],
+            cert: config.buckle.https.cert,
+            key: config.buckle.https.key
+        }, app);
+        io = require('socket.io')(server);
+        server.timeout = 600000;
+        server.listen(config.buckle.https.port || 8443);
     }
 
-    var environmentMonitor = container.resolve('environmentMonitor');
+    let environmentMonitor = container.resolve('environmentMonitor');
     environmentMonitor.registerListeners(listeners);
     environmentMonitor.monitor();
     container.resolve('anomalyInterface').registerListener();
     container.resolve('environmentInterface').registerListener();
 
-    if (config.buckle.cometd.enabled && io) {
-        listeners.push("./listener/cometd");
-        io.on('connection', function (socket) {
-            logger.info('a new client is connected [%j]', socket);
+    io.on('connection', function(socket) {
+        logger.info('a new client is connected [%j]', socket);
+        socket.on('disconnect', function() { logger.info('a client is disconnected'); });
+    });
 
-            socket.on('disconnect', function () {
-                logger.info('a client is disconnected');
-            });
-        });
-
-        container.resolve('eventEmitter').on('event', msg => {
-            io.emit("/topic/events", msg);
-        });
-    }
+    container.resolve('eventEmitter').on('event', msg => {
+        io.emit("/topic/events", msg);
+    });
 
     logger.info("Eureka enabled: [%s]", config.buckle.eureka.enabled);
     if ('true' === config.buckle.eureka.enabled) {
-        const Eureka = require('./infrastructure/Eureka');
+        let Eureka = require('./infrastructure/Eureka');
         var eurekaClient = new Eureka(config);
         eurekaClient.connect();
     }
 
-    app.use(function (err, req, res, next) {
+    app.use(function(err, req, res, next) {
         logger.error(err.stack)
         res.status(500).send('Something broke!')
     });
 
-    process.on('unhandledRejection', function (err) {
+    process.on('unhandledRejection', function(err) {
         logger.error("caught and unhandled rejection");
         logger.error(err);
         console.error(err);
     });
 
-    process.on('uncaughtException', function (err) {
+    process.on('uncaughtException', function(err) {
         logger.error("caught and unhandled exception");
         logger.error(err.stack);
         process.exit(1);
