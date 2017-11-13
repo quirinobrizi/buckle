@@ -438,14 +438,14 @@ module.exports = class Environment {
     async inspectRealizationsForAnomalies(realization, anomalyService) {
         let containerId = realization.getContainerId();
         var self = this;
-        return await this.lock.acquire(containerId, async function() {
+        return await this.lock.acquire(containerId, async function () {
             return await self._doInspectRealizationsForAnomalies(realization, anomalyService)
         });
     }
 
     async _doInspectRealizationsForAnomalies(realization, anomalyService) {
         let container = this.getContainer(realization.getContainerId());
-        if(!container) {
+        if (!container) {
             return [];
         }
         logger.debug("inspecting realization for container %s", container.getName());
@@ -466,12 +466,17 @@ module.exports = class Environment {
             } else {
                 containerRequirements = container.defaultResourceRequirements();
             }
-            for (let [containerId, requirement] of containerRequirements) {
-                let container = this.getContainer(containerId);
-                let limits = await container.updateLimits(this.containerRepository, requirement);
-                realization.setAllocatedCpu(limits.cpu);
+            if (containerRequirements.size > 0) {
+                for (let [containerId, requirement] of containerRequirements) {
+                    let container = this.getContainer(containerId);
+                    let limits = await container.updateLimits(this.containerRepository, requirement);
+                    realization.setAllocatedCpu(limits.cpu);
+                    this.containerRepository.save(container);
+                    answer.push(container);
+                }
+            } else {
+                realization.setAllocatedCpu(container.getCpuLimit());
                 this.containerRepository.save(container);
-                answer.push(container);
             }
             return answer;
         } else {

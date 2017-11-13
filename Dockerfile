@@ -1,4 +1,4 @@
-FROM    node:8-alpine
+FROM    node:9.1.0-alpine
 
 ENV     NODE_CONFIG_DIR '/app/config'
 

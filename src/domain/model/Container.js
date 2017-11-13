@@ -368,8 +368,8 @@ module.exports = class Container {
     defaultResourceRequirements() {
         let answer = new Map()
         answer.set(this.getContainerId(), {
-                cpu: this.calculateRequiredCpuQuota(),
-                memory: this.calculateRequiredMemory()
+            cpu: this.calculateRequiredCpuQuota(),
+            memory: this.calculateRequiredMemory()
         });
         return answer;
     }
@@ -398,16 +398,9 @@ module.exports = class Container {
         if (!this.needToBeUpdated()) {
             return this.hostConfig.CpuQuota;
         }
-        var cpu = MIN_CPU_QUOTA / 1000;
-        if (this.hasAnomaliesOfType(["cpu-saturated", "cpu-spike"])) {
-            cpu = metricsHelper.extractMax(this.realizations, value => {
-                return value.calculateCpuUsageUnix();
-            });
-        } else {
-            cpu = metricsHelper.calculateAverage(this.realizations, value => {
-                return value.calculateCpuUsageUnix();
-            });
-        }
+        var cpu = metricsHelper.calculateAverage(this.realizations, value => {
+            return value.calculateCpuUsageUnix();
+        });
         return metricsHelper.calculateCpuQuota(cpu, MIN_CPU_QUOTA, MAX_CPU_QUOTA);
     }
 
@@ -420,16 +413,9 @@ module.exports = class Container {
         if (!this.needToBeUpdated()) {
             return this.hostConfig.Memory;
         }
-        var memory = MIN_MEMORY;
-        if (this.hasAnomaliesOfType(["memory-saturated"])) {
-            memory = metricsHelper.extractMax(this.realizations, value => {
-                return value.getMemory().current;
-            });
-        } else {
-            memory = metricsHelper.calculateAverage(this.realizations, value => {
-                return value.getMemory().current;
-            });
-        }
+        var memory = metricsHelper.calculateAverage(this.realizations, value => {
+            return value.getMemory().current;
+        });
         return memory;
     }
 
