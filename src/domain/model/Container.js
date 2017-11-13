@@ -223,7 +223,7 @@ module.exports = class Container {
      *          minutes, false otherwise.
      */
     isRunningForAtLeastMinutes(minutes) {
-        return (Date.now() - (minutes * 60 * 1000)) > this.created;
+        return this.isRunning() && (Date.now() - (minutes * 60 * 1000)) > this.created;
     }
 
     addRealization(stats) {
@@ -360,8 +360,12 @@ module.exports = class Container {
         }
     }
 
+    isRunning() {
+        return this.getState() === 'running' || this.getStatus() === 'running';
+    }
+
     needToBeUpdated() {
-        return this.getStatus() === 'running' &&
+        return this.isRunning() &&
             (this.hasAnomaliesOfType(["cpu"]) || this.hasAnomaliesOfType(["memory"]));
     }
 
