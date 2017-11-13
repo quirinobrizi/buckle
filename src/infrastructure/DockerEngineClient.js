@@ -421,27 +421,27 @@ module.exports = class DockerEngineClient {
                 request(
                     options,
                     function(e, r, b) {
-                        let answer = self._handler(e, r, b);
                         try {
+                            let answer = self._handler(e, r, b, options);
                             if (options.method === 'GET') {
                                 self.cache.set(options.url, answer);
                             } else {
                                 self.cache.clear();
                             }
-                        } catch (e) { /* ignore */ }
-                        resolve(answer);
+                            resolve(answer);
+                        } catch (e) { reject(e); }
                     });
             }
         });
     }
 
-    _handler(e, r, b) {
+    _handler(e, r, b, options) {
         // console.log("handling response from docker engine. Error: [%j]
         // Response:
         // [%j] Body: [%j]", e,r,b);
         var statusCode = r ? r.statusCode || 500 : 500;
         if (e || [200, 201, 202, 204, 304].indexOf(statusCode) < 0) {
-            logger.error("Received error from docker engine: ", statusCode, e || b);
+            logger.error("Received error from docker engine: %s - %s invoking URL %s", statusCode, e || b, options.url);
             // TODO: QB handle 500 device or resource busy as a success.?
             if (!e && 'string' === typeof b) {
                 b = {

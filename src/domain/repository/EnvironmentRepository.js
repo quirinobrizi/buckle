@@ -42,7 +42,7 @@ module.exports = class EnvironmentRepository {
         answer.setContainerRepository(this.containerRepository);
         try {
             if (this.swarmKitEnabled) {
-                logger.debug("Try build environment starting from tasks, this is when SwarmKit (Swarm mode) is enabled.")
+                logger.info("Try build environment starting from tasks, this is when SwarmKit (Swarm mode) is enabled.")
                 let tasks = await this.dockerEngineClient.listTasks();
                 for (var i = 0; i < tasks.length; i++) {
                     let task = tasks[i];
@@ -57,6 +57,7 @@ module.exports = class EnvironmentRepository {
                 answer = this._loadFromContainers(answer);
             }
         } catch (e) {
+            console.log("caught exception ", e);
             this.swarmKitEnabled = false;
             answer = await this._loadFromContainers(answer);
         }
