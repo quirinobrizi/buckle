@@ -57,7 +57,6 @@ module.exports = class EnvironmentRepository {
                 answer = this._loadFromContainers(answer);
             }
         } catch (e) {
-            console.log("caught exception ", e);
             this.swarmKitEnabled = false;
             answer = await this._loadFromContainers(answer);
         }
