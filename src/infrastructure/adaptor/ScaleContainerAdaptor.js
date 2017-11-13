@@ -156,9 +156,23 @@ module.exports = class ScaleContainerAdaptor {
             logger.info("copying network configuration for %s actual config %s", key, JSON.stringify(network));
             config.NetworkingConfig.EndpointsConfig[key] = {
                 Links: network.Links,
-                Aliases: !['default', 'bridge'].includes(key) ? network.Aliases ? network.Aliases.push(clusterId) : [clusterId] : null
+                Aliases: this._buildAliases(key, network, clusterId)
             };
         }
         return config;
+    }
+
+    _buildAliases(type, network, clusterId) {
+        if(['default', 'bridge'].includes(type)) {
+            return null;
+        } else {
+            if(network.Aliases) {
+                var aliases = network.Aliases;
+                aliases.push(clusterId);
+                return aliases;
+            } else {
+                return [clusterId];
+            }
+        }
     }
 }
