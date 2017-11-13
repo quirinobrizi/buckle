@@ -429,7 +429,12 @@ module.exports = class DockerEngineClient {
                                 self.cache.clear();
                             }
                             resolve(answer);
-                        } catch (e) { reject(e); }
+                        } catch (e) {
+                            if (options.method !== 'GET') {
+                                self.cache.clear();
+                            }
+                            reject(e);
+                        }
                     });
             }
         });
