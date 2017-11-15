@@ -1,0 +1,35 @@
+{
+  "name": "buckle-compose",
+  "version": "1.0.0",
+  "description": "Node JS parser for docker compose",
+  "main": "index.js",
+  "scripts": {
+    "test": "nyc node_modules/.bin/mocha && nyc report --reporter=lcov"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quirinobrizi/buckle.git"
+  },
+  "keywords": [
+    "buckle",
+    "node",
+    "js",
+    "docker-compose",
+    "docker"
+  ],
+  "author": "Quirino Brizi [quirino.brizi@gmail.com]",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/quirinobrizi/buckle/issues"
+  },
+  "homepage": "https://github.com/quirinobrizi/buckle/compose#README.md",
+  "devDependencies": {
+    "chai": "^4.1.0",
+    "eslint": "^4.8.0",
+    "js-yaml": "^3.10.0",
+    "mocha": "^3.5.0",
+    "nyc": "^11.2.1",
+    "should": "^11.2.1",
+    "testdouble": "^3.2.6"
+  }
+}
