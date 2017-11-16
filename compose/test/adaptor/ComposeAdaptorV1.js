@@ -46,8 +46,20 @@ describe("ComposeAdaptorV1", function () {
                     Labels: {},
                     StopSignal: undefined,
                     HostConfig: {
-                        CgroupParent: undefined,
+                        CpuShares: undefined,
+                        Memory: undefined,
+                        BlkioWeight: undefined,
+                        BlkioWeightDevice: undefined,
+                        CpuPeriod: undefined,
+                        CpuQuota: undefined,
+                        CpuRealtimePeriod: undefined,
+                        CpuRealtimeRuntime: undefined,
+                        CpusetCpus: undefined,
+                        CpusetMems: undefined,
                         Devices: ['/dev/ttyUSB0:/dev/ttyUSB0'],
+                        DeviceCgroupRules: undefined,
+                        DiskQuota: undefined,
+                        CgroupParent: undefined,
                         CapAdd: undefined,
                         CapDrop: undefined,
                         Dns: [undefined],
@@ -65,7 +77,8 @@ describe("ComposeAdaptorV1", function () {
                             }]
                         },
                         SecurityOpt: undefined,
-                        Ulimits: undefined
+                        Ulimits: undefined,
+                        CpuCount: undefined
                     }
                 }
             },
@@ -80,8 +93,20 @@ describe("ComposeAdaptorV1", function () {
                     Labels: {},
                     StopSignal: undefined,
                     HostConfig: {
-                        CgroupParent: undefined,
+                        CpuShares: undefined,
+                        Memory: undefined,
+                        BlkioWeight: undefined,
+                        BlkioWeightDevice: undefined,
+                        CpuPeriod: undefined,
+                        CpuQuota: undefined,
+                        CpuRealtimePeriod: undefined,
+                        CpuRealtimeRuntime: undefined,
+                        CpusetCpus: undefined,
+                        CpusetMems: undefined,
                         Devices: undefined,
+                        DeviceCgroupRules: undefined,
+                        DiskQuota: undefined,
+                        CgroupParent: undefined,
                         CapAdd: undefined,
                         CapDrop: undefined,
                         Dns: [undefined],
@@ -99,7 +124,8 @@ describe("ComposeAdaptorV1", function () {
                             }]
                         },
                         SecurityOpt: undefined,
-                        Ulimits: undefined
+                        Ulimits: undefined,
+                        CpuCount: undefined
                     }
                 }
             }
