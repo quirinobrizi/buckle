@@ -18,6 +18,10 @@
 
 const util = require('util');
 
+const Interpolator = require('./Interpolator');
+const AdaptorFactory = require('./adaptor/AdaptorFactory');
+const Merger = require('./Merger');
+
 module.exports = class Parsers {
 
     /**
@@ -32,6 +36,10 @@ module.exports = class Parsers {
     constructor(configurations, environment) {
         this.configurations = configurations;
         this.environment = environment;
+
+        this.interpolator = new Interpolator();
+        this.adaptorFactory = new AdaptorFactory();
+        this.merger = new Merger();
     }
 
     /**
@@ -39,19 +47,23 @@ module.exports = class Parsers {
      * @return {Object} The containers configuration as per requested compose version
      */
     parse() {
-        this._validateVersion()
+        let version = this._validateVersion()
+        this.interpolator.interpolate(this.configurations, this.environment);
+        let configuration = this.merger.merge(this.configurations);
+        return this.adaptorFactory.get(version).adapt(configuration);
     }
 
     _validateVersion() {
-        let master = this.configurations[0];
+        let master = this.configurations[0].version;
         for (let i = 1; i < this.configurations.length; i++) {
-            let configuration = this.configurations[i];
-            if(master.version !== configuration.version) {
+            let configuration = this.configurations[i].version;
+            if(master !== configuration) {
                 let VersionMismatchException = require('./exception/VersionMismatchException');
                 throw new VersionMismatchException(
                     util.format("Version mismatch: master configuration specifies version %s but extension uses version %s",
-                                master.version, configuration.version));
+                                master, configuration));
             }
         }
+        return master || "1";
     }
 };

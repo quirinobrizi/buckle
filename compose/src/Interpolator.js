@@ -18,6 +18,8 @@
 
 const util = require('util');
 
+const InterpolationException = require('./exception/InterpolationException');
+
 module.exports = class Interpolator {
     constructor() {
 
@@ -37,7 +39,7 @@ module.exports = class Interpolator {
         var answer = new Array();
         for (let i = 0; i < configurations.length; i++) {
             let configuration = configurations[i];
-            this._doInterpolate(configuration, environment);
+            answer.push(this._doInterpolate(configuration, environment));
         }
         return answer;
     }
@@ -57,21 +59,32 @@ module.exports = class Interpolator {
                 if (type === 'object') {
                     result = this._doInterpolate(value, environment);
                 } else {
-                    let match = /^\$\{{0,1}([A-Z]+)\}{0,1}/g.exec(value);
+                    let match = /.*\$\{{0,1}([A-Z_]+)\}{0,1}/g.exec(value);
+                    console.log("value %s matches regexp? %s", value, match);
                     if (match) {
                         let ev = match[1];
-                        if (value === util.format("$%s", ev)) {
-                            result = environment.get(ev);
-                        } else if (value === util.format("${%s}", ev)) {
-                            result = environment.get(ev);
-                        } else if (value.includes(util.format("$%s", ev))) {
-
-                        } else if (value.includes(util.format("${%s}", ev))) {
-
+                        if(!environment.has(ev)) {
+                            throw new InterpolationException("requested environemt variable " + ev + " is not defined");
                         }
+                        let envNoBrackets = util.format("$%s", ev);
+                        let envWithBrackets = util.format("${%s}", ev);
+                        let envValue = environment.get(ev);
+                        if (value === envNoBrackets) {
+                            result = envValue;
+                        } else if (value === envWithBrackets) {
+                            result = envValue;
+                        } else if (value.includes(envNoBrackets)) {
+                            result = value.replace(envNoBrackets, envValue);
+                        } else if (value.includes(envWithBrackets)) {
+                            result = value.replace(envWithBrackets, envValue);
+                        }
+                    } else {
+                        result = value;
                     }
                 }
+                configuration[key] = result;
             }
         }
+        return configuration;
     }
 };

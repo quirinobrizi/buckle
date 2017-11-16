@@ -1,0 +1,7 @@
+dbpostgres:
+ environment:
+     - VERSION: ${POSTGRES_VERSION}
+express-app-container:
+ environment:
+     - DB_HOST: ${DB_HOST}
+     - DB_PORT: 27017
