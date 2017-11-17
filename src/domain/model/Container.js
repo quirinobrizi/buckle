@@ -402,9 +402,10 @@ module.exports = class Container {
         if (!this.needToBeUpdated()) {
             return this.hostConfig.CpuQuota;
         }
-        var cpu = metricsHelper.calculateAverage(this.realizations, value => {
-            return value.calculateCpuUsageUnix();
-        });
+        // var cpu = metricsHelper.calculateAverage(this.realizations, value => {
+        //     return value.calculateCpuUsageUnix();
+        // });
+        var cpu = this.getLatestCpuUsage();
         return metricsHelper.calculateCpuQuota(cpu, MIN_CPU_QUOTA, MAX_CPU_QUOTA);
     }
 
