@@ -25,9 +25,7 @@ module.exports = class ComposeAdaptorV1 extends Adaptor {
         super();
     }
 
-    extractMemory(service) {
-        return service.mem_limit;
-    }
+    extractMemory(service) { return service.mem_limit; }
 
     extractBlkioWeight(service) { }
 
