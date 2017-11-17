@@ -370,7 +370,7 @@ module.exports = class Container {
     }
 
     defaultResourceRequirements() {
-        let answer = new Map()
+        let answer = new Map();
         answer.set(this.getContainerId(), {
             cpu: this.calculateRequiredCpuQuota(),
             memory: this.calculateRequiredMemory()
@@ -406,7 +406,9 @@ module.exports = class Container {
         //     return value.calculateCpuUsageUnix();
         // });
         var cpu = this.getLatestCpuUsage();
-        return metricsHelper.calculateCpuQuota(cpu, MIN_CPU_QUOTA, MAX_CPU_QUOTA);
+        var answer = metricsHelper.calculateCpuQuota(cpu, MIN_CPU_QUOTA, MAX_CPU_QUOTA);
+        logger.info("current requested CPU %s, calculated quota %s", cpu, answer);
+        return answer;
     }
 
     /**
