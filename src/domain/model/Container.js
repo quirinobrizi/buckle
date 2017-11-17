@@ -402,9 +402,6 @@ module.exports = class Container {
         if (!this.needToBeUpdated()) {
             return this.hostConfig.CpuQuota;
         }
-        // var cpu = metricsHelper.calculateAverage(this.realizations, value => {
-        //     return value.calculateCpuUsageUnix();
-        // });
         var cpu = this.getLatestCpuUsage();
         var answer = metricsHelper.calculateCpuQuota(cpu, MIN_CPU_QUOTA, MAX_CPU_QUOTA);
         logger.info("current requested CPU %s, calculated quota %s", cpu, answer);
@@ -420,10 +417,7 @@ module.exports = class Container {
         if (!this.needToBeUpdated()) {
             return this.hostConfig.Memory;
         }
-        var memory = metricsHelper.calculateAverage(this.realizations, value => {
-            return value.getMemory().current;
-        });
-        return memory;
+        return this.getLatestMemoryRealization().current;
     }
 
     _addCpuConfigIfNeeded(config, cpuQuota) {

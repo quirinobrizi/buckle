@@ -22,7 +22,7 @@ module.exports = {
 
   calculateCpuQuota(cpu, minQuota, maxQuota) {
     // max CPU is given as a percentage of ONE_SEC_IN_JIFFY
-    var quota = 2.5 * ((this.ONE_SEC_IN_JIFFY * cpu) / 100);
+    var quota = 1.5 * ((this.ONE_SEC_IN_JIFFY * cpu) / 100);
     var answer = (quota < minQuota) ? minQuota : quota;
     return Math.round((answer > maxQuota) ? maxQuota : answer);
   },
