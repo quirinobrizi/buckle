@@ -19,18 +19,41 @@ module.exports = class Adaptor {
                 answer.push({
                     name: key,
                     configuration: {
-                        Cmd: this.extractCmd(service),
-                        Entrypoint: this.extractEntrypoint(service),
-                        Env: this.extractEnvironmentVariables(service),
+                        Hostname:this.extractHostname(service),
+                        Domainname: this.extractDomainname(service),
+                        User: this.extractUser(service),
+                        AttachStdin: this.extractAttachStdin(service),
+                        AttachStdout: this.extractAttachStdout(service),
+                        AttachStderr: this.extractAttachStderr(service),
                         ExposedPorts: this.extractExposedPorts(service),
+                        Tty:
+                        OpenStdin
+                        StdinOnce
+                        Env: this.extractEnvironmentVariables(service),
+                        Cmd: this.extractCmd(service),
+                        Healthcheck:
+                        ArgsEscaped:
                         Image: this.extractImage(service),
+                        Volumes:
+                        WorkingDir:
+                        Entrypoint: this.extractEntrypoint(service),
+                        NetworkDisabled:
+                        MacAddress:
+                        OnBuild:
                         Labels: this.extractLabels(service),
                         StopSignal: this.extractStopSignal(service),
+                        StopTimeout:
+                        Shell:
                         HostConfig: {
                             CpuShares: this.extractCpuShares(service),
                             Memory: this.extractMemory(service),
+                            CgroupParent: this.extractCgroupParent(service),
                             BlkioWeight: this.extractBlkioWeight(service),
                             BlkioWeightDevice: this.extractBlkioWeightDevice(service),
+                            BlkioDeviceReadBps:
+                            BlkioDeviceWriteBps:
+                            BlkioDeviceReadIOps:
+                            BlkioDeviceWriteIOps:
                             CpuPeriod: this.extractCpuPeriod(service),
                             CpuQuota: this.extractCpuQuota(service),
                             CpuRealtimePeriod: this.extractCpuRealtimePeriod(service),
@@ -40,26 +63,73 @@ module.exports = class Adaptor {
                             Devices: this.extractDevices(service),
                             DeviceCgroupRules: this.extractDeviceCgroupRules(service),
                             DiskQuota: this.extractDiskQuota(service),
-                            CgroupParent: this.extractCgroupParent(service),
-                            CapAdd: this.extractCapAdd(service),
-                            CapDrop: this.extractCapDrop(service),
-                            Dns: this.extractDns(service),
-                            DnsSearch: this.extractDnsSearch(service),
-                            ExtraHosts: this.extractExtrHosts(service),
-                            Links: this.extractLinks(service),
+                            KernelMemory:
+                            MemoryReservation:
+                            MemoryReservation:
+                            MemorySwappiness:
+                            NanoCPUs:
+                            OomKillDisable:
+                            PidsLimit:
+                            Ulimits: this.extractULimits(service),
+                            CpuCount: this.extractCpuCount(service),
+                            CpuPercent:
+                            IOMaximumIOps:
+                            IOMaximumBandwidth:
+                            Binds:
+                            ContainerIDFile:
                             LogConfig: this.extractLogConfig(service),
                             NetworkMode: this.extractNetworkMode(service),
                             PortBindings: this.extractPortBindings(service),
+                            RestartPolicy:
+                            AutoRemove:
+                            VolumeDriver:
+                            VolumesFrom:
+                            Mounts:
+                            CapAdd: this.extractCapAdd(service),
+                            CapDrop: this.extractCapDrop(service),
+                            Dns: this.extractDns(service),
+                            DnsOptions:
+                            DnsSearch: this.extractDnsSearch(service),
+                            ExtraHosts: this.extractExtrHosts(service),
+                            GroupAdd:
+                            IpcMode:
+                            Cgroup:
+                            Links: this.extractLinks(service),
+                            OomScoreAdj:
+                            PidMode:
+                            Privileged:
+                            PublishAllPorts:
+                            ReadonlyRootfs:
                             SecurityOpt: this.extractSecurityOptions(service),
-                            Ulimits: this.extractULimits(service),
-                            CpuCount: this.extractCpuCount(service)
-                        }
+                            StorageOpt:
+                            Tmpfs:
+                            UTSMode:
+                            UsernsMode:
+                            ShmSize:
+                            Sysctls:
+                            Runtime:
+                            ConsoleSize:
+                            Isolation:
+                        },
+                        NetworkingConfig: this.extractNetworkingConfig(service);
                     }
                 });
             }
         }
         return answer;
     }
+
+    extractHostname(service) { return service.hostname; }
+
+    extractDomainname(service) { return service.domainname; }
+
+    extractUser(service) { return service.user; }
+
+    extractAttachStdin(service) { return service.attachstdin || false; }
+
+    extractAttachStdout(service){ return service.AttachStdout || true; }
+
+    extractAttachStderr(service) { return service.AttachStderr || true; }
 
     extractCpuShares(service) { return service.cpu_shares; }
 
@@ -147,4 +217,6 @@ module.exports = class Adaptor {
     }
 
     extractCpuCount(service) { throw new Error('not implemented'); }
+
+    extractNetworkingConfig(service) { throw new Error('not implemented'); }
 };
