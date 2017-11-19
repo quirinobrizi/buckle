@@ -23,9 +23,9 @@ const assert = require('assert');
 
 const ComposeAdaptorV1 = require('../../src/adaptor/ComposeAdaptorV1');
 
-describe("ComposeAdaptorV1", function () {
+describe("ComposeAdaptorV1", function() {
 
-    it("adapt configuration received", function () {
+    it("adapt configuration received", function() {
         let testObj = new ComposeAdaptorV1();
         let configuration = yaml.safeLoad(fs.readFileSync('./test/resources/docker-compose-v1.yml', 'utf8'));
         // act
@@ -38,18 +38,41 @@ describe("ComposeAdaptorV1", function () {
         let expected = [{
                 name: 'dbpostgres',
                 configuration: {
-                    Cmd: undefined,
-                    Entrypoint: undefined,
-                    Env: ['VAR_1=10'],
+                    Hostname: undefined,
+                    Domainname: undefined,
+                    User: undefined,
+                    AttachStdin: false,
+                    AttachStdout: true,
+                    AttachStderr: true,
                     ExposedPorts: undefined,
+                    Tty: false,
+                    OpenStdin: false,
+                    StdinOnce: undefined,
+                    Env: ['VAR_1=10'],
+                    Cmd: undefined,
+                    Healthcheck: undefined,
+                    ArgsEscaped: undefined,
                     Image: 'postgres:9.3.1',
+                    Volumes: undefined,
+                    WorkingDir: undefined,
+                    Entrypoint: undefined,
+                    NetworkDisabled: undefined,
+                    MacAddress: undefined,
+                    OnBuild: [],
                     Labels: {},
                     StopSignal: undefined,
+                    StopTimeout: 10,
+                    Shell: undefined,
                     HostConfig: {
                         CpuShares: undefined,
                         Memory: undefined,
+                        CgroupParent: undefined,
                         BlkioWeight: undefined,
                         BlkioWeightDevice: undefined,
+                        BlkioDeviceReadBps: undefined,
+                        BlkioDeviceWriteBps: undefined,
+                        BlkioDeviceReadIOps: undefined,
+                        BlkioDeviceWriteIOps: undefined,
                         CpuPeriod: undefined,
                         CpuQuota: undefined,
                         CpuRealtimePeriod: undefined,
@@ -59,13 +82,20 @@ describe("ComposeAdaptorV1", function () {
                         Devices: ['/dev/ttyUSB0:/dev/ttyUSB0'],
                         DeviceCgroupRules: undefined,
                         DiskQuota: undefined,
-                        CgroupParent: undefined,
-                        CapAdd: undefined,
-                        CapDrop: undefined,
-                        Dns: [undefined],
-                        DnsSearch: [undefined],
-                        ExtraHosts: undefined,
-                        Links: undefined,
+                        KernelMemory: undefined,
+                        MemoryReservation: undefined,
+                        MemorySwap: undefined,
+                        MemorySwappiness: undefined,
+                        NanoCPUs: undefined,
+                        OomKillDisable: undefined,
+                        PidsLimit: undefined,
+                        Ulimits: undefined,
+                        CpuCount: undefined,
+                        CpuPercent: undefined,
+                        IOMaximumIOps: undefined,
+                        IOMaximumBandwidth: undefined,
+                        Binds: undefined,
+                        ContainerIDFile: undefined,
                         LogConfig: {
                             Type: undefined,
                             Config: undefined
@@ -76,27 +106,82 @@ describe("ComposeAdaptorV1", function () {
                                 HostPort: '5304'
                             }]
                         },
+                        RestartPolicy: {
+                            name: undefined
+                        },
+                        AutoRemove: undefined,
+                        VolumeDriver: undefined,
+                        VolumesFrom: undefined,
+                        Mounts: undefined,
+                        CapAdd: undefined,
+                        CapDrop: undefined,
+                        Dns: [undefined],
+                        DnsOptions: undefined,
+                        DnsSearch: [undefined],
+                        ExtraHosts: undefined,
+                        GroupAdd: undefined,
+                        IpcMode: undefined,
+                        Cgroup: undefined,
+                        Links: undefined,
+                        OomScoreAdj: undefined,
+                        PidMode: undefined,
+                        Privileged: undefined,
+                        PublishAllPorts: undefined,
+                        ReadonlyRootfs: undefined,
                         SecurityOpt: undefined,
-                        Ulimits: undefined,
-                        CpuCount: undefined
-                    }
+                        StorageOpt: undefined,
+                        Tmpfs: undefined,
+                        UTSMode: undefined,
+                        UsernsMode: undefined,
+                        ShmSize: undefined,
+                        Sysctls: undefined,
+                        Runtime: undefined,
+                        ConsoleSize: undefined,
+                        Isolation: undefined
+                    },
+                    NetworkingConfig: undefined
                 }
             },
             {
                 name: 'express-app-container',
                 configuration: {
-                    Cmd: undefined,
-                    Entrypoint: undefined,
-                    Env: ['VAR_1=ABCD'],
+                    Hostname: undefined,
+                    Domainname: undefined,
+                    User: undefined,
+                    AttachStdin: false,
+                    AttachStdout: true,
+                    AttachStderr: true,
                     ExposedPorts: undefined,
+                    Tty: false,
+                    OpenStdin: false,
+                    StdinOnce: undefined,
+                    Env: ['VAR_1=ABCD'],
+                    Cmd: undefined,
+                    Healthcheck: undefined,
+                    ArgsEscaped: undefined,
                     Image: 'myimage:3.0.1',
+                    Volumes: {
+                        '/app': {}
+                    },
+                    WorkingDir: undefined,
+                    Entrypoint: undefined,
+                    NetworkDisabled: undefined,
+                    MacAddress: undefined,
+                    OnBuild: [],
                     Labels: {},
                     StopSignal: undefined,
+                    StopTimeout: 10,
+                    Shell: undefined,
                     HostConfig: {
                         CpuShares: undefined,
                         Memory: undefined,
+                        CgroupParent: undefined,
                         BlkioWeight: undefined,
                         BlkioWeightDevice: undefined,
+                        BlkioDeviceReadBps: undefined,
+                        BlkioDeviceWriteBps: undefined,
+                        BlkioDeviceReadIOps: undefined,
+                        BlkioDeviceWriteIOps: undefined,
                         CpuPeriod: undefined,
                         CpuQuota: undefined,
                         CpuRealtimePeriod: undefined,
@@ -106,13 +191,20 @@ describe("ComposeAdaptorV1", function () {
                         Devices: undefined,
                         DeviceCgroupRules: undefined,
                         DiskQuota: undefined,
-                        CgroupParent: undefined,
-                        CapAdd: undefined,
-                        CapDrop: undefined,
-                        Dns: [undefined],
-                        DnsSearch: [undefined],
-                        ExtraHosts: undefined,
-                        Links: ['dbpostgres'],
+                        KernelMemory: undefined,
+                        MemoryReservation: undefined,
+                        MemorySwap: undefined,
+                        MemorySwappiness: undefined,
+                        NanoCPUs: undefined,
+                        OomKillDisable: undefined,
+                        PidsLimit: undefined,
+                        Ulimits: undefined,
+                        CpuCount: undefined,
+                        CpuPercent: undefined,
+                        IOMaximumIOps: undefined,
+                        IOMaximumBandwidth: undefined,
+                        Binds: ['./:/app'],
+                        ContainerIDFile: undefined,
                         LogConfig: {
                             Type: undefined,
                             Config: undefined
@@ -123,10 +215,40 @@ describe("ComposeAdaptorV1", function () {
                                 HostPort: '3000'
                             }]
                         },
+                        RestartPolicy: {
+                            name: undefined
+                        },
+                        AutoRemove: undefined,
+                        VolumeDriver: undefined,
+                        VolumesFrom: undefined,
+                        Mounts: undefined,
+                        CapAdd: undefined,
+                        CapDrop: undefined,
+                        Dns: [undefined],
+                        DnsOptions: undefined,
+                        DnsSearch: [undefined],
+                        ExtraHosts: undefined,
+                        GroupAdd: undefined,
+                        IpcMode: undefined,
+                        Cgroup: undefined,
+                        Links: ['dbpostgres'],
+                        OomScoreAdj: undefined,
+                        PidMode: undefined,
+                        Privileged: undefined,
+                        PublishAllPorts: undefined,
+                        ReadonlyRootfs: undefined,
                         SecurityOpt: undefined,
-                        Ulimits: undefined,
-                        CpuCount: undefined
-                    }
+                        StorageOpt: undefined,
+                        Tmpfs: undefined,
+                        UTSMode: undefined,
+                        UsernsMode: undefined,
+                        ShmSize: undefined,
+                        Sysctls: undefined,
+                        Runtime: undefined,
+                        ConsoleSize: undefined,
+                        Isolation: undefined
+                    },
+                    NetworkingConfig: undefined
                 }
             }
         ];

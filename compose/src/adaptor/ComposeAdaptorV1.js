@@ -29,7 +29,21 @@ module.exports = class ComposeAdaptorV1 extends Adaptor {
 
     extractBlkioWeight(service) { }
 
-    extractBlkioWeightDevice(service){  }
+    extractStdinOnce(service) { }
+
+    extractHealthCheck(service) { }
+
+    extractArgsEscaped(service) { }
+
+    extractBlkioWeightDevice(service) { }
+
+    extractBlkioDeviceReadBps(service) { }
+
+    extractBlkioDeviceWriteBps(service) { }
+
+    extractBlkioDeviceReadIOps(service) { }
+
+    extractBlkioDeviceWriteIOps(service) { }
 
     extractCpuPeriod(service) { }
 
@@ -46,4 +60,66 @@ module.exports = class ComposeAdaptorV1 extends Adaptor {
     extractNetworkMode(service) { return service.net; }
 
     extractCpuCount(service) { }
+
+    extractNetworkDisabled(service) { }
+
+    extractShell(service) { }
+
+    extractKernelMemory(service) { }
+
+    extractMemoryReservation(service) { }
+
+    extractMemorySwap(service) { }
+
+    extractMemorySwappiness(service) { }
+
+    extractNanoCPUs(service) { }
+
+    extractOomKillDisable(service) { }
+
+    extractPidsLimit(service) { }
+
+    extractCpuPercent(service) { }
+
+    extractIOMaximumIOps(service) { }
+
+    extractIOMaximumBandwidth(service) { }
+
+    extractContainerIDFile(service) { }
+
+    extractRestartPolicy(service) { return { name: service.restart }; }
+
+    extractAutoRemove(service) { }
+
+    extractMounts(service) { }
+
+    extractExtrHosts(service) { }
+
+    extractGroupAdd(service) { }
+
+    extractCgroup(service) { }
+
+    extractOomScoreAdj(service) { }
+
+    extractPublishAllPorts(service) { }
+
+    extractStorageOpt(service) { }
+
+    extractDnsOptions(service) { }
+
+    extractTmpfs(service) { }
+
+    extractUTSMode(service) { }
+
+    extractUsernsMode(service) { }
+
+    extractSysctls(service) { }
+
+    extractRuntime(service) { }
+
+    extractConsoleSize(service) { }
+
+    extractIsolation(service) { }
+
+    extractNetworkingConfig(service) { }
 };

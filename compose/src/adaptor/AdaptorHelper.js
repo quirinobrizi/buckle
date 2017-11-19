@@ -61,6 +61,7 @@ module.exports = {
             return util.format("%s/tcp", exposedPort);
         });
     },
+
     parseLabels: function (labels) {
         var answer = {};
         if (!labels) {
@@ -157,5 +158,22 @@ module.exports = {
             }
         });
         return answer;
+    },
+
+    /**
+     * Parses the defined volumes
+     * @method parseVolumes
+     * @param  {Array}     volumes the defined volumes
+     * @return {Object}            An object mapping volume on the container to empty object
+     */
+    parseVolumes(volumes) {
+        if(!volumes) {
+            return volumes;
+        }
+        return volumes.reduce((a, v) => {
+            let volume = v.split(':')[1];
+            a[volume] = {};
+            return a;
+        }, {});
     }
 };
