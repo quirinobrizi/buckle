@@ -184,7 +184,7 @@ module.exports = {
      * @param  {Array} b another array to compare
      * @return {bolean}   true if the arrays are equals, false otherwise.
      */
-    arraysEqual: function(a, b) {
+    arrayEquals: function(a, b) {
         if (a === b) return true;
         if (a == null || b == null) return false;
         if (a.length != b.length) return false;

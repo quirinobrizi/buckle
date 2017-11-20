@@ -136,4 +136,20 @@ module.exports = class ComposeAdaptorV2 extends Adaptor {
         }
         return null;
     }
+
+    extractDnsOptions(service) {
+        return service.dns_opt;
+    }
+
+    extractTmpfs(service) {
+        if(!service.tmpfs) {
+            return null;
+        }
+        if(Array.isArray(service.tmpfs)) {
+            return service.tmpfs.reduce((answer, fs) => { return answer[fs] = "rw,noexec,nosuid,size=65536k";});
+        }
+        let answer = {};
+        answer[service.tmpfs] = "rw,noexec,nosuid,size=65536k";
+        return answer;
+    }
 };

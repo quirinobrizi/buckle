@@ -16,6 +16,7 @@ module.exports = class Adaptor {
      * @return {Array.<Object>s}       the containers to deploy
      */
     adapt(configuration) {
+        // let self = this;
         let version = this._getVersion(configuration);
         let answer = {
             containers: Array()
@@ -23,107 +24,7 @@ module.exports = class Adaptor {
         let containers = adaptorHelper.arrayEquals(VERSION_1, version) ?
             configuration :
             configuration.services;
-        answer.containers = Object.keys(containers).map(key => {
-            let service = containers[key];
-            return {
-                name: key,
-                configuration: {
-                    Hostname: this.extractHostname(service),
-                    Domainname: this.extractDomainname(service),
-                    User: this.extractUser(service),
-                    AttachStdin: this.extractAttachStdin(service),
-                    AttachStdout: this.extractAttachStdout(service),
-                    AttachStderr: this.extractAttachStderr(service),
-                    ExposedPorts: this.extractExposedPorts(service),
-                    Tty: this.extractTty(service),
-                    OpenStdin: this.extractOpenStdin(service),
-                    StdinOnce: this.extractStdinOnce(service),
-                    Env: this.extractEnvironmentVariables(service),
-                    Cmd: this.extractCmd(service),
-                    Healthcheck: this.extractHealthCheck(service),
-                    ArgsEscaped: this.extractArgsEscaped(service),
-                    Image: this.extractImage(service),
-                    Volumes: this.extractVolumes(service),
-                    WorkingDir: this.extractWorkingDir(service),
-                    Entrypoint: this.extractEntrypoint(service),
-                    NetworkDisabled: this.extractNetworkDisabled(service),
-                    MacAddress: this.extractMacAddress(service),
-                    OnBuild: [], // QB: not supported as of now
-                    Labels: this.extractLabels(service),
-                    StopSignal: this.extractStopSignal(service),
-                    StopTimeout: this.extractStopTimeout(service),
-                    Shell: this.extractShell(service),
-                    HostConfig: {
-                        CpuShares: this.extractCpuShares(service),
-                        Memory: this.extractMemory(service),
-                        CgroupParent: this.extractCgroupParent(service),
-                        BlkioWeight: this.extractBlkioWeight(service),
-                        BlkioWeightDevice: this.extractBlkioWeightDevice(service),
-                        BlkioDeviceReadBps: this.extractBlkioDeviceReadBps(service),
-                        BlkioDeviceWriteBps: this.extractBlkioDeviceWriteBps(service),
-                        BlkioDeviceReadIOps: this.extractBlkioDeviceReadIOps(service),
-                        BlkioDeviceWriteIOps: this.extractBlkioDeviceWriteIOps(service),
-                        CpuPeriod: this.extractCpuPeriod(service),
-                        CpuQuota: this.extractCpuQuota(service),
-                        CpuRealtimePeriod: this.extractCpuRealtimePeriod(service),
-                        CpuRealtimeRuntime: this.extractCpuRealtimeRuntime(service),
-                        CpusetCpus: this.extractCpusetCpus(service),
-                        CpusetMems: this.extractCpusetMems(service),
-                        Devices: this.extractDevices(service),
-                        DeviceCgroupRules: this.extractDeviceCgroupRules(service),
-                        DiskQuota: this.extractDiskQuota(service),
-                        KernelMemory: this.extractKernelMemory(service),
-                        MemoryReservation: this.extractMemoryReservation(service),
-                        MemorySwap: this.extractMemorySwap(service),
-                        MemorySwappiness: this.extractMemorySwappiness(service),
-                        NanoCPUs: this.extractNanoCPUs(service),
-                        OomKillDisable: this.extractOomKillDisable(service),
-                        PidsLimit: this.extractPidsLimit(service),
-                        Ulimits: this.extractULimits(service),
-                        CpuCount: this.extractCpuCount(service),
-                        CpuPercent: this.extractCpuPercent(service),
-                        IOMaximumIOps: this.extractIOMaximumIOps(service),
-                        IOMaximumBandwidth: this.extractIOMaximumBandwidth(service),
-                        Binds: this.extractBinds(service),
-                        ContainerIDFile: this.extractContainerIDFile(service),
-                        LogConfig: this.extractLogConfig(service),
-                        NetworkMode: this.extractNetworkMode(service),
-                        PortBindings: this.extractPortBindings(service),
-                        RestartPolicy: this.extractRestartPolicy(service),
-                        AutoRemove: this.extractAutoRemove(service),
-                        VolumeDriver: this.extractVolumeDriver(service),
-                        VolumesFrom: this.extractVolumesFrom(service),
-                        Mounts: this.extractMounts(service),
-                        CapAdd: this.extractCapAdd(service),
-                        CapDrop: this.extractCapDrop(service),
-                        Dns: this.extractDns(service),
-                        DnsOptions: this.extractDnsOptions(service),
-                        DnsSearch: this.extractDnsSearch(service),
-                        ExtraHosts: this.extractExtrHosts(service),
-                        GroupAdd: this.extractGroupAdd(service),
-                        IpcMode: this.extractIpcMode(service),
-                        Cgroup: this.extractCgroup(service),
-                        Links: this.extractLinks(service),
-                        OomScoreAdj: this.extractOomScoreAdj(service),
-                        PidMode: this.extractPidMode(service),
-                        Privileged: this.extractPrivileged(service),
-                        PublishAllPorts: this.extractPublishAllPorts(service),
-                        ReadonlyRootfs: this.extractReadonlyRootfs(service),
-                        SecurityOpt: this.extractSecurityOptions(service),
-                        StorageOpt: this.extractStorageOpt(service),
-                        Tmpfs: this.extractTmpfs(service),
-                        UTSMode: this.extractUTSMode(service),
-                        UsernsMode: this.extractUsernsMode(service),
-                        ShmSize: this.extractShmSize(service),
-                        Sysctls: this.extractSysctls(service),
-                        Runtime: this.extractRuntime(service),
-                        ConsoleSize: this.extractConsoleSize(service),
-                        Isolation: this.extractIsolation(service)
-                    },
-                    NetworkingConfig: this.extractNetworkingConfig(service)
-                }
-            };
-        });
+        answer.containers = Object.entries(containers).map(this._container.bind(this));
 
         if(this.isVersion2OrAbove(version)) {
             // evaluate dependency order for services if defined
@@ -137,6 +38,107 @@ module.exports = class Adaptor {
         }
 
         return answer;
+    }
+
+    _container([key, service]) {
+        return {
+            name: key,
+            configuration: {
+                Hostname: this.extractHostname(service),
+                Domainname: this.extractDomainname(service),
+                User: this.extractUser(service),
+                AttachStdin: this.extractAttachStdin(service),
+                AttachStdout: this.extractAttachStdout(service),
+                AttachStderr: this.extractAttachStderr(service),
+                ExposedPorts: this.extractExposedPorts(service),
+                Tty: this.extractTty(service),
+                OpenStdin: this.extractOpenStdin(service),
+                StdinOnce: this.extractStdinOnce(service),
+                Env: this.extractEnvironmentVariables(service),
+                Cmd: this.extractCmd(service),
+                Healthcheck: this.extractHealthCheck(service),
+                ArgsEscaped: this.extractArgsEscaped(service),
+                Image: this.extractImage(service),
+                Volumes: this.extractVolumes(service),
+                WorkingDir: this.extractWorkingDir(service),
+                Entrypoint: this.extractEntrypoint(service),
+                NetworkDisabled: this.extractNetworkDisabled(service),
+                MacAddress: this.extractMacAddress(service),
+                OnBuild: [], // QB: not supported as of now
+                Labels: this.extractLabels(service),
+                StopSignal: this.extractStopSignal(service),
+                StopTimeout: this.extractStopTimeout(service),
+                Shell: this.extractShell(service),
+                HostConfig: {
+                    CpuShares: this.extractCpuShares(service),
+                    Memory: this.extractMemory(service),
+                    CgroupParent: this.extractCgroupParent(service),
+                    BlkioWeight: this.extractBlkioWeight(service),
+                    BlkioWeightDevice: this.extractBlkioWeightDevice(service),
+                    BlkioDeviceReadBps: this.extractBlkioDeviceReadBps(service),
+                    BlkioDeviceWriteBps: this.extractBlkioDeviceWriteBps(service),
+                    BlkioDeviceReadIOps: this.extractBlkioDeviceReadIOps(service),
+                    BlkioDeviceWriteIOps: this.extractBlkioDeviceWriteIOps(service),
+                    CpuPeriod: this.extractCpuPeriod(service),
+                    CpuQuota: this.extractCpuQuota(service),
+                    CpuRealtimePeriod: this.extractCpuRealtimePeriod(service),
+                    CpuRealtimeRuntime: this.extractCpuRealtimeRuntime(service),
+                    CpusetCpus: this.extractCpusetCpus(service),
+                    CpusetMems: this.extractCpusetMems(service),
+                    Devices: this.extractDevices(service),
+                    DeviceCgroupRules: this.extractDeviceCgroupRules(service),
+                    DiskQuota: this.extractDiskQuota(service),
+                    KernelMemory: this.extractKernelMemory(service),
+                    MemoryReservation: this.extractMemoryReservation(service),
+                    MemorySwap: this.extractMemorySwap(service),
+                    MemorySwappiness: this.extractMemorySwappiness(service),
+                    NanoCPUs: this.extractNanoCPUs(service),
+                    OomKillDisable: this.extractOomKillDisable(service),
+                    PidsLimit: this.extractPidsLimit(service),
+                    Ulimits: this.extractULimits(service),
+                    CpuCount: this.extractCpuCount(service),
+                    CpuPercent: this.extractCpuPercent(service),
+                    IOMaximumIOps: this.extractIOMaximumIOps(service),
+                    IOMaximumBandwidth: this.extractIOMaximumBandwidth(service),
+                    Binds: this.extractBinds(service),
+                    ContainerIDFile: this.extractContainerIDFile(service),
+                    LogConfig: this.extractLogConfig(service),
+                    NetworkMode: this.extractNetworkMode(service),
+                    PortBindings: this.extractPortBindings(service),
+                    RestartPolicy: this.extractRestartPolicy(service),
+                    AutoRemove: this.extractAutoRemove(service),
+                    VolumeDriver: this.extractVolumeDriver(service),
+                    VolumesFrom: this.extractVolumesFrom(service),
+                    Mounts: this.extractMounts(service),
+                    CapAdd: this.extractCapAdd(service),
+                    CapDrop: this.extractCapDrop(service),
+                    Dns: this.extractDns(service),
+                    DnsOptions: this.extractDnsOptions(service),
+                    DnsSearch: this.extractDnsSearch(service),
+                    ExtraHosts: this.extractExtrHosts(service),
+                    GroupAdd: this.extractGroupAdd(service),
+                    IpcMode: this.extractIpcMode(service),
+                    Cgroup: this.extractCgroup(service),
+                    Links: this.extractLinks(service),
+                    OomScoreAdj: this.extractOomScoreAdj(service),
+                    PidMode: this.extractPidMode(service),
+                    Privileged: this.extractPrivileged(service),
+                    PublishAllPorts: this.extractPublishAllPorts(service),
+                    ReadonlyRootfs: this.extractReadonlyRootfs(service),
+                    SecurityOpt: this.extractSecurityOptions(service),
+                    StorageOpt: this.extractStorageOpt(service),
+                    Tmpfs: this.extractTmpfs(service),
+                    UTSMode: this.extractUTSMode(service),
+                    UsernsMode: this.extractUsernsMode(service),
+                    ShmSize: this.extractShmSize(service),
+                    Sysctls: this.extractSysctls(service),
+                    Runtime: this.extractRuntime(service),
+                    ConsoleSize: this.extractConsoleSize(service),
+                    Isolation: this.extractIsolation(service)
+                },
+                NetworkingConfig: this.extractNetworkingConfig(service)
+            }
+        };
     }
 
     _getVersion(configuration) {
@@ -155,17 +157,14 @@ module.exports = class Adaptor {
 
     extractDependencyOrder(service) {
         if(service.depends_on) {
-            return service.depends_on.map(dep => {
-                let answer = {};
-                if(typeof dep === 'object') {
-                    answer.container = 
-                } else {
-                    answer.container = dep;
-                }
-                return answer;
-            });
+            let type = typeof service.depends_on;
+            if(type === 'object') {
+                return service.depends_on;
+            } else {
+                return service.depends_on.reduce(answer, container => { return answer[container] = {}; }, {});
+            }
         }
-        return [];
+        return {};
     }
 
     extractHostname(service) {
