@@ -27,6 +27,9 @@ module.exports = class AdaptorFactory {
 
         this.adaptors.set("2", new ComposeAdaptorV2());
         this.adaptors.set("2.0", new ComposeAdaptorV2());
+        this.adaptors.set("2.1", new ComposeAdaptorV2());
+        this.adaptors.set("2.2", new ComposeAdaptorV2());
+        this.adaptors.set("2.3", new ComposeAdaptorV2());
     }
 
     /**

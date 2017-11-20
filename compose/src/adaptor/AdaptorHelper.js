@@ -166,8 +166,8 @@ module.exports = {
      * @param  {Array}     volumes the defined volumes
      * @return {Object}            An object mapping volume on the container to empty object
      */
-    parseVolumes(volumes) {
-        if(!volumes) {
+    parseVolumes: function(volumes) {
+        if (!volumes) {
             return volumes;
         }
         return volumes.reduce((a, v) => {
@@ -175,5 +175,26 @@ module.exports = {
             a[volume] = {};
             return a;
         }, {});
+    },
+
+    /**
+     * Evaluate if the provided arrays are equals, the order of the elements is important,
+     * arrays with same elements but different order are not considered equals.
+     * @param  {Array} a one array to compare
+     * @param  {Array} b another array to compare
+     * @return {bolean}   true if the arrays are equals, false otherwise.
+     */
+    arraysEqual: function(a, b) {
+        if (a === b) return true;
+        if (a == null || b == null) return false;
+        if (a.length != b.length) return false;
+
+        // If you don't care about the order of the elements inside
+        // the array, you should sort both arrays here.
+
+        for (var i = 0; i < a.length; ++i) {
+            if (a[i] !== b[i]) return false;
+        }
+        return true;
     }
 };

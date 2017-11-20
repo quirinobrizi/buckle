@@ -14,15 +14,28 @@
  * the License.
  ******************************************************************************/
 
-'use strict';
+'use strict'
 
-const Parser = require('./Parser');
+const fs = require('fs');
+const util = require('util');
+const yaml = require('js-yaml');
+const assert = require('assert');
 
-module.exports = class ComposeParser {
-    constructor() {}
+const ComposeAdaptorV2 = require('../../src/adaptor/ComposeAdaptorV2');
 
-    parse(configurations, environment) {
-        let parser = new Parser();
-        return parser.parse(configurations, environment);
-    }
-};
+describe("ComposeAdaptorV2", function() {
+
+    it("adapt configuration received", function() {
+        let testObj = new ComposeAdaptorV2();
+        let configuration = yaml.safeLoad(fs.readFileSync('./test/resources/docker-compose-v2.yml', 'utf8'));
+        // act
+        let actual = testObj.adapt(configuration);
+        // assert
+        console.log(util.inspect(actual, {
+            colors: true,
+            depth: 10
+        }));
+        let expected = [];
+        assert.deepEqual(actual.containers, expected);
+    });
+});

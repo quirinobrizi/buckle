@@ -252,6 +252,6 @@ describe("ComposeAdaptorV1", function() {
                 }
             }
         ];
-        assert.deepEqual(actual, expected);
+        assert.deepEqual(actual.containers, expected);
     });
 });

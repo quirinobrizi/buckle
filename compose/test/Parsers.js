@@ -26,10 +26,12 @@ describe('Parser', function () {
     var testObj;
     before(function () {
         testObj = new Parser([{
-                version: "2.0"
+                version: "2.0",
+                services: {}
             },
             {
-                version: "2.0"
+                version: "2.0",
+                services: {}
             }
         ], {});
     });

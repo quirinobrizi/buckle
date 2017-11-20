@@ -16,19 +16,124 @@
 
 'use strict';
 
-module.exports = class ComposeAdaptorV2 {
-    constructor() {
+const Adaptor = require('./Adaptor');
+const adaptorHelper = require('./AdaptorHelper');
 
+module.exports = class ComposeAdaptorV2 extends Adaptor {
+    constructor() {
+        super();
     }
 
     /**
-     * Convert the provided configuration into a set of deployable containers.
-     * The configuration describes the consolidated view of the containers.
-     *
-     * @param  {Object} configurations the containers configuration
-     * @return {Array.<Object>s}       the containers to deploy
+     * Modify the proportion of bandwidth allocated to this service relative to other services.
+     * Takes an integer value between 10 and 1000, with 500 being the default.
+     * @param  {object} service the container definition
+     * @return {Number}         A number between 10 and 1000
      */
-    adapt(configuration) {
+    extractBlkioWeight(service) {
+        if (service.blkio_config) {
+            return service.blkio_config.weight;
+        }
+        return null;
+    }
 
+    /**
+     * Fine-tune bandwidth allocation by device. Each item in the list must have two keys:
+     *  - path, defining the symbolic path to the affected device
+     *  - weight, an integer value between 10 and 1000
+     *
+     * @param  {object} service the container definition
+     * @return {Array.<Object>} the defined defined weight or null
+     */
+    extractBlkioWeightDevice(service) {
+        if (service.blkio_config && service.blkio_config.weight_device) {
+            return service.blkio_config.weight_device.map((el) => {
+                return {
+                    Path: el.path,
+                    Weight: el.weight
+                };
+            });
+        }
+        return null;
+    }
+
+    /**
+     * Set a limit in bytes per second for read operations on a given device. Each item in the list must have two keys:
+     * - path, defining the symbolic path to the affected device
+     * - rate, either as an integer value representing the number of bytes or as a string expressing a byte value
+     *
+     * @param  {object} service the container definition
+     * @return {Array.<Object>} the defined defined limit or null
+     */
+    extractBlkioDeviceReadBps(service) {
+        if (service.blkio_config && service.blkio_config.device_read_bps) {
+            return service.blkio_config.device_read_bps.map((el) => {
+                return {
+                    Path: el.path,
+                    Rate: el.rate
+                };
+            });
+        }
+        return null;
+    }
+
+    /**
+     * Set a limit in bytes per second for write operations on a given device. Each item in the list must have two keys:
+     * - path, defining the symbolic path to the affected device
+     * - rate, either as an integer value representing the number of bytes or as a string expressing a byte value
+     *
+     * @param  {object} service the container definition
+     * @return {Array.<Object>} the defined defined limit or null
+     */
+    extractBlkioDeviceWriteBps(service) {
+        if (service.blkio_config && service.blkio_config.device_write_bps) {
+            return service.blkio_config.device_write_bps.map((el) => {
+                return {
+                    Path: el.path,
+                    Rate: el.rate
+                };
+            });
+        }
+        return null;
+    }
+
+    /**
+     * Set a limit in operations per second for read operations on a given device. Each item in the list must have two keys:
+     * - path, defining the symbolic path to the affected device
+     * - rate, as an integer value representing the permitted number of operations per second.
+     *
+     * @param  {object} service the container definition
+     * @return {Array.<Object>} the defined defined limit or null
+     */
+    extractBlkioDeviceReadIOps(service) {
+        if (service.blkio_config && service.blkio_config.device_read_iops) {
+            return service.blkio_config.device_read_iops.map((el) => {
+                return {
+                    Path: el.path,
+                    Rate: el.rate
+                };
+            });
+        }
+        return null;
+    }
+
+    /**
+     * Set a limit in operations per second for write operations on a given device. Each item in the list must have two keys:
+     * - path, defining the symbolic path to the affected device
+     * - rate, as an integer value representing the permitted number of operations per second.
+     *
+     * @param  {object} service the container definition
+     * @return {Array.<Object>} the defined defined limit or null
+     */
+    extractBlkioDeviceWriteIOps(service) {
+        if (service.blkio_config && service.blkio_config.device_write_iops) {
+            return service.blkio_config.device_write_iops.map((el) => {
+                return {
+                    Path: el.path,
+                    Rate: el.rate
+                };
+            });
+        }
+        return null;
     }
 };
