@@ -19,30 +19,40 @@ module.exports = class Adaptor {
         // let self = this;
         let version = this._getVersion(configuration);
         let answer = {
-            containers: Array()
+            containers: {},
+            networks: this.isVersion2OrAbove(version) ? configuration.networks : {},
+            volumes: this.isVersion2OrAbove(version) ? configuration.volumes : {}
         };
         let containers = adaptorHelper.arrayEquals(VERSION_1, version) ?
             configuration :
             configuration.services;
-        answer.containers = Object.entries(containers).map(this._container.bind(this));
+        let services = Object.entries(containers).reduce(this._container.bind(this), answer);
 
         if(this.isVersion2OrAbove(version)) {
             // evaluate dependency order for services if defined
-            answer.dependency = Object.keys(containers).map(key => {
-                let service = containers[key];
-                return {
-                    name: key,
-                    order: this.extractDependencyOrder(service)
-                }
-            });
+            answer.dependencies = Object.entries(containers).map(this._dependencies.bind(this));
         }
-
         return answer;
     }
 
-    _container([key, service]) {
+    _networks(key, service, services, networks) {
+        if(!networks) {
+            return {};
+        }
+        services[key].NetworkingConfig = this.extractNetworkingConfig(service, networks);
+    }
+
+    _dependencies([key, service]) {
         return {
             name: key,
+            order: this.extractDependencyOrder(service)
+        }
+    }
+
+    _container(config, [key, service]) {
+        config.containers[key] = {
+            name: key,
+            cardinality: service.scale || 1, // exists on compose version 2.2 or higher
             configuration: {
                 Hostname: this.extractHostname(service),
                 Domainname: this.extractDomainname(service),
@@ -115,7 +125,7 @@ module.exports = class Adaptor {
                     Dns: this.extractDns(service),
                     DnsOptions: this.extractDnsOptions(service),
                     DnsSearch: this.extractDnsSearch(service),
-                    ExtraHosts: this.extractExtrHosts(service),
+                    ExtraHosts: this.extractExtraHosts(service),
                     GroupAdd: this.extractGroupAdd(service),
                     IpcMode: this.extractIpcMode(service),
                     Cgroup: this.extractCgroup(service),
@@ -136,9 +146,10 @@ module.exports = class Adaptor {
                     ConsoleSize: this.extractConsoleSize(service),
                     Isolation: this.extractIsolation(service)
                 },
-                NetworkingConfig: this.extractNetworkingConfig(service)
+                NetworkingConfig: this.extractNetworkingConfig(service, config.networks)
             }
         };
+        return config;
     }
 
     _getVersion(configuration) {
@@ -304,7 +315,7 @@ module.exports = class Adaptor {
     }
 
     extractStopTimeout(service) {
-        return service.stop_timeout || 10;
+        return service.stop_timeout || service.stop_grace_period || 10;
     }
 
     extractShell(service) {
@@ -355,7 +366,7 @@ module.exports = class Adaptor {
         throw new Error('not implemented');
     }
 
-    extractExtrHosts(service) {
+    extractExtraHosts(service) {
         return service.extra_hosts;
     }
 
@@ -526,7 +537,7 @@ module.exports = class Adaptor {
         throw new Error('not implemented');
     }
 
-    extractNetworkingConfig(service) {
+    extractNetworkingConfig(service, networks) {
         throw new Error('not implemented');
     }
 

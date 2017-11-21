@@ -19,6 +19,14 @@
 const Adaptor = require('./Adaptor');
 const adaptorHelper = require('./AdaptorHelper');
 
+/**
+ * Parses docker compose v2 configuration file, not supporte properties are:
+ *  - env_file
+ *  - extends
+ *  - external_links
+ *  - init
+ * @type {[type]}
+ */
 module.exports = class ComposeAdaptorV2 extends Adaptor {
     constructor() {
         super();
@@ -142,14 +150,146 @@ module.exports = class ComposeAdaptorV2 extends Adaptor {
     }
 
     extractTmpfs(service) {
-        if(!service.tmpfs) {
+        if (!service.tmpfs) {
             return null;
         }
-        if(Array.isArray(service.tmpfs)) {
-            return service.tmpfs.reduce((answer, fs) => { return answer[fs] = "rw,noexec,nosuid,size=65536k";});
+        if (Array.isArray(service.tmpfs)) {
+            return service.tmpfs.reduce((answer, fs) => {
+                return answer[fs] = "rw,noexec,nosuid,size=65536k";
+            });
         }
         let answer = {};
         answer[service.tmpfs] = "rw,noexec,nosuid,size=65536k";
         return answer;
     }
+
+    extractHealthCheck(service) {
+        if (service.healthcheck) {
+            if (service.healthcheck.disable) {
+                return {
+                    Test: ["NONE"]
+                };
+            }
+            return {
+                Test: service.healthcheck.test,
+                Interval: service.healthcheck.interval,
+                Timeout: service.healthcheck.timeout,
+                Retries: service.healthcheck.retries,
+                StartPeriod: service.healthcheck.start_period
+            };
+        }
+        return null;
+    }
+
+    extractIsolation(service) {
+        return service.isolation;
+    }
+
+    extractNetworkMode(service) {
+        return service.network_mode;
+    }
+
+    /**
+     * Extract the network configuration.
+     * @param  {Object} service  the service configuration
+     * @param  {Array.<Object>} networks the networks configuration
+     * @return {Object}          the computed network configuration consumable from docker APIs
+     */
+    extractNetworkingConfig(service, networks) {
+        if (!service.networks|| !networks) {
+            return {
+                EndpointsConfig: {}
+            };
+        }
+        let doExtractConfig = function(networkConfig, networkName, config) {
+            console.log("parsing network %s", networkName);
+            if(!networks[networkName]) {
+                throw new Error("network " + networkName + " is not defined");
+            }
+            if(!config) {
+                networkConfig.EndpointsConfig[name] = {};
+            }
+            networkConfig.EndpointsConfig[networkName] = {
+                Aliases: config.aliases,
+                IPAMConfig: {
+                    IPv4Address: config.app_net.ipv4_address,
+                    IPv6Address: config.app_net.ipv6_address,
+                    LinkLocalIPs: config.app_net.link_local_ips
+                }
+            }
+            return networkConfig;
+        };
+
+        if (typeof service.networks === 'object') {
+            Object.entries(service.networks).reduce((networkConfig, [name, config]) => {
+                return doExtractConfig(networkConfig, name, config);
+            }, { EndpointsConfig: {} });
+        } else {
+            return service.networks.reduce((networkConfig, name) => {
+                return doExtractConfig(networkConfig, name, config);
+            }, { EndpointsConfig: {} });
+        }
+    }
+
+    extractPidsLimit(service) {
+        return service.pids_limit;
+    }
+
+    extractStorageOpt(service) {
+        return service.storage_opt;
+    }
+
+    extractSysctls(service) {
+        return service.sysctls;
+    }
+
+    extractUsernsMode(service) {
+        return service.userns_mode;
+    }
+
+    extractRestartPolicy(service) {
+        return service.restart;
+    }
+
+    extractStdinOnce(service) { }
+
+    extractArgsEscaped(service) { }
+
+    extractNetworkDisabled(service) { }
+    extractShell(service) { }
+
+    extractKernelMemory(service) { }
+
+    extractMemory(service) { return service.mem_limit; }
+
+    extractMemoryReservation(service) { return service.mem_reservation; }
+
+    extractMemorySwap(service) { return service.memswap_limit; }
+
+    extractMemorySwappiness(service) { return service.mem_swappiness; }
+
+    extractCpuPercent(service) { return service.cpu_percent; }
+    extractCpuPeriod(service) { }
+    extractCpuRealtimePeriod(service) { }
+    extractCpuRealtimeRuntime(service) { }
+    extractCpusetMems(service) { }
+    extractCpuCount(service) { return service.cpu_count; }
+    extractNanoCPUs(service) { }
+
+    extractOomScoreAdj(service) { return service.oom_score_adj; }
+
+    extractDeviceCgroupRules(service) {}
+    extractDiskQuota(service) {}
+    extractOomKillDisable(service) {}
+    extractIOMaximumIOps(service) {}
+    extractIOMaximumBandwidth(service) {}
+    extractContainerIDFile(service) {}
+    extractAutoRemove(service) {}
+    extractMounts(service) {}
+    extractGroupAdd(service) {}
+    extractCgroup(service) {}
+    extractPublishAllPorts(service) {}
+    extractUTSMode(service) {}
+    extractRuntime(service) {}
+    extractConsoleSize(service) {}
 };

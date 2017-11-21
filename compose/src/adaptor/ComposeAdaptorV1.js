@@ -93,7 +93,7 @@ module.exports = class ComposeAdaptorV1 extends Adaptor {
 
     extractMounts(service) { }
 
-    extractExtrHosts(service) { }
+    extractExtraHosts(service) { }
 
     extractGroupAdd(service) { }
 

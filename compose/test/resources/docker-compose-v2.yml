@@ -1,4 +1,5 @@
 version: '2.2'
+
 services:
   foo:
     image: busybox
@@ -19,3 +20,23 @@ services:
       device_write_iops:
         - path: /dev/sdb
           rate: 30
+  microservice_1:
+    restart: always
+    environment:
+      SPRING_CLOUD_CONFIG_ENABLED: "true"
+      EUREKA_CLIENT_ENABLED: "true"
+    expose:
+      - 8080
+    networks:
+      - backend
+
+volumes:
+  data:
+    external: true
+    name: my-app-data
+
+networks:
+    frontend:
+        external: true
+    backend:
+        external: true
