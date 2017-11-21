@@ -207,27 +207,29 @@ module.exports = class ComposeAdaptorV2 extends Adaptor {
                 throw new Error("network " + networkName + " is not defined");
             }
             if(!config) {
-                networkConfig.EndpointsConfig[name] = {};
-            }
-            networkConfig.EndpointsConfig[networkName] = {
-                Aliases: config.aliases,
-                IPAMConfig: {
-                    IPv4Address: config.app_net.ipv4_address,
-                    IPv6Address: config.app_net.ipv6_address,
-                    LinkLocalIPs: config.app_net.link_local_ips
+                networkConfig.EndpointsConfig[networkName] = {};
+            } else {
+                networkConfig.EndpointsConfig[networkName] = {
+                    Aliases: config.aliases,
+                    IPAMConfig: {
+                        IPv4Address: config.app_net ? config.app_net.ipv4_address : undefined,
+                        IPv6Address: config.app_net ? config.app_net.ipv6_address : undefined,
+                        LinkLocalIPs: config.app_net ? config.app_net.link_local_ips : undefined
+                    }
                 }
             }
             return networkConfig;
         };
 
-        if (typeof service.networks === 'object') {
-            Object.entries(service.networks).reduce((networkConfig, [name, config]) => {
-                return doExtractConfig(networkConfig, name, config);
+        if (Array.isArray(service.networks)) {
+            return service.networks.reduce((networkConfig, name) => {
+                return doExtractConfig(networkConfig, name, null);
             }, { EndpointsConfig: {} });
         } else {
-            return service.networks.reduce((networkConfig, name) => {
+            return Object.entries(service.networks).reduce((networkConfig, [name, config]) => {
                 return doExtractConfig(networkConfig, name, config);
             }, { EndpointsConfig: {} });
+
         }
     }
 
@@ -248,7 +250,13 @@ module.exports = class ComposeAdaptorV2 extends Adaptor {
     }
 
     extractRestartPolicy(service) {
-        return service.restart;
+        if(!service.restart) {
+            return undefined;
+        }
+        return {
+            Name: service.restart,
+            MaximumRetryCount: service.restart === 'on-failure' ? 3 : undefined
+        };
     }
 
     extractStdinOnce(service) { }

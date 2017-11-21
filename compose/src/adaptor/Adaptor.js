@@ -168,14 +168,13 @@ module.exports = class Adaptor {
 
     extractDependencyOrder(service) {
         if(service.depends_on) {
-            let type = typeof service.depends_on;
-            if(type === 'object') {
-                return service.depends_on;
+            if(Array.isArray(service.depends_on)) {
+                return service.depends_on.reduce((answer, container) => { answer[container] = {}; return answer; }, {});
             } else {
-                return service.depends_on.reduce(answer, container => { return answer[container] = {}; }, {});
+                return service.depends_on;
             }
         }
-        return {};
+        return undefined;
     }
 
     extractHostname(service) {

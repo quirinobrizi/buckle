@@ -63,15 +63,15 @@ module.exports = {
     },
 
     parseLabels: function (labels) {
-        var answer = {};
         if (!labels) {
-            return answer;
+            return undefined;
         }
         if (Array.isArray(labels)) {
-            labels.forEach(label => {
-                var parts = label.split('=');
+            return labels.reduce((answer, label) => {
+                let parts = label.split('=');
                 answer[parts[0]] = parts[1];
-            });
+                return answer;
+            }, {});
         } else {
             return Object.assign(answer, labels);
         }

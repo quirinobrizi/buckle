@@ -3,6 +3,8 @@ version: '2.2'
 services:
   foo:
     image: busybox
+    depends_on:
+        - microservice_1
     blkio_config:
       weight: 300
       weight_device:
@@ -25,10 +27,15 @@ services:
     environment:
       SPRING_CLOUD_CONFIG_ENABLED: "true"
       EUREKA_CLIENT_ENABLED: "true"
+    labels:
+      - org.buckle.cluster=microservice
     expose:
       - 8080
     networks:
-      - backend
+      backend:
+      frontend:
+        aliases:
+            - ms1
 
 volumes:
   data:
