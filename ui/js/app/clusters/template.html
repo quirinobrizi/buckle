@@ -2,7 +2,7 @@
 	<div class="col-md-2">
 		<sidebar></sidebar>
 	</div>
-	
+
 	<div class="col-md-10">
 			<nav class="navbar navbar-default">
 				<div class="collapse navbar-collapse" id="bs-navbar-collapse-1">
@@ -13,6 +13,12 @@
 									aria-label="Deploy containers" title="Deploy containers">
 									<span class="glyphicon glyphicon-circle-arrow-up"
 										aria-hidden="true"></span> Deploy
+								</button>
+								<button type="submit" class="btn navbar-btn btn-default"
+									aria-label="Upload compose file" title="Upload compose file"
+									ngf-select="$ctrl.deployWithDockerCompose($files)"
+									ngf-multiple="true" ngf-max-files="5">
+									<span class="glyphicon glyphicon-blackboard" aria-hidden="true"></span> Compose
 								</button>
 						</span></li>
 						<ul>

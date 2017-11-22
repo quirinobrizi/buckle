@@ -90,6 +90,10 @@ angular
                     }
                 };
 
+                self.deployWithDockerCompose = function(composeFiles) {
+                    console.log(composeFiles);
+                }
+
                 self.openDeployClustersModal = function (clusters, _controller) {
                     $uibModal.open({
                         ariaLabelledBy: 'modal-title',
