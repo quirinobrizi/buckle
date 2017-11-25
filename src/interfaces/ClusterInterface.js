@@ -45,12 +45,13 @@ module.exports = class ClusterInterface {
          * @type {function}
          * @param body
          *          the deploy request payload containing the clusters to deploy
-         *          as a array of cluster object. I.e. { "clusters": [ { "tag":
-         *          "1.3.4", "name": "mongodb" } ] }
+         *          as a array of cluster object and an optional type defining the nature of the clusters provided.
+         *          I.e. { type: "buckle", "clusters": [ { "tag": "1.3.4", "name": "mongodb" } ] }
          */
         router.post('/clusters', function(req, res) {
-            var clusters = req.body.clusters || [];
-            var response = self.containerService.deploy(clusters).then(response => {
+            let clusters = req.body.clusters || [];
+            let type = req.body.type || "buckle";
+            self.containerService.deploy(type, clusters).then(response => {
                 res.status(200).json(response);
             }).catch(e => {
                 apiHelper.handleApiError(e, req, res);

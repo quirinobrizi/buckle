@@ -24,30 +24,28 @@ angular
             function ClustersController(Environment, Clusters, Repositories, $uibModal, Bus, $scope, $q) {
                 var self = this;
 
-                self.$onInit = function () {
+                self.$onInit = function() {
                     self.serverError = false;
                     self.loading = true;
                     self._loadClusters();
                     self._registerListeners();
                 }
 
-                self.$onDestroy = function () {
+                self.$onDestroy = function() {
                     Bus.remove('containers.started');
                     Bus.remove('containers.stopped');
                     Bus.remove('containers.removed');
                 }
 
-                self.removeCluster = function (name) {
+                self.removeCluster = function(name) {
                     if (confirm("Removing all containers for " + name)) {
-                        Clusters.remove({
-                                key: name
-                            }).$promise
+                        Clusters.remove({ key: name }).$promise
                             .then(self._loadClusters)
                             .catch(self._handleError);
                     }
                 }
 
-                self.deleteContainer = function (cluster, container) {
+                self.deleteContainer = function(cluster, container) {
                     if (confirm("Removing " + container + " from " + cluster)) {
                         Clusters.removeContainer({
                                 key: cluster,
@@ -58,7 +56,7 @@ angular
                     }
                 }
 
-                self.scaleClusterContainers = function (cardinality, clusters) {
+                self.scaleClusterContainers = function(cardinality, clusters) {
                     var cluster = clusters[0];
                     if (confirm("Scaling " + cluster.name + " from " + clusters.length + " to " + cardinality)) {
                         Clusters.scale({
@@ -74,7 +72,7 @@ angular
                     }
                 }
 
-                self.deployClusterContainers = function (baseContainer, tag, cardinality) {
+                self.deployClusterContainers = function(baseContainer, tag, cardinality) {
                     if (confirm("Deploying version " + tag + " for " + baseContainer.name + " image: " + baseContainer.image)) {
                         Clusters.deploy({
                                 key: baseContainer.name
@@ -91,64 +89,82 @@ angular
                 };
 
                 self.deployWithDockerCompose = function(composeFiles) {
-                    console.log(composeFiles);
+                    let read = function(file) {
+                        let deferred = $q.defer();
+                        let reader = new FileReader();
+                        reader.onload = function(evt) { return deferred.resolve(jsyaml.load(evt.target.result)); };
+                        reader.onerror = deferred.reject;
+                        reader.readAsText(file);
+                        return deferred.promise;
+                    };
+                    if (composeFiles && composeFiles.length > 0) {
+                        $q.all(composeFiles.reduce(function(answer, file) { answer.push(read(file)); return answer; }, []))
+                            .then(function(files) {
+                                Clusters.deployAll({}, { type: 'compose', clusters: files }).$promise
+                                    .then(_controller._loadClusters)
+                                    .catch(function(r) {
+                                        self._handleError('An error occurred  while deploying clusters: ' + JSON.stringify(r));
+                                        self._loadClusters();
+                                    });
+                            }).catch(function(e) { self._handleError(e); });
+                    }
                 }
 
-                self.openDeployClustersModal = function (clusters, _controller) {
+                self.openDeployClustersModal = function(clusters, _controller) {
                     $uibModal.open({
                         ariaLabelledBy: 'modal-title',
                         ariaDescribedBy: 'modal-body',
                         templateUrl: 'js/app/clusters/deployClustersModalTemplate.html',
                         controllerAs: '$ctrl',
-                        controller: function ($uibModalInstance, clusters) {
+                        controller: function($uibModalInstance, clusters) {
                             this.clusters = clusters;
                             this.selectedClusters = [];
-                            this.ok = function () {
+                            this.ok = function() {
                                 $uibModalInstance.close(this.selectedClusters, _controller);
                             };
-                            this.cancel = function () {
+                            this.cancel = function() {
                                 $uibModalInstance.dismiss('cancel');
                             };
                         },
                         size: 'lg',
                         resolve: {
-                            clusters: function () {
+                            clusters: function() {
                                 return clusters;
                             },
-                            _controller: function () {
+                            _controller: function() {
                                 return self;
                             }
                         }
-                    }).result.then(function (selectedClusters, _controller) {
+                    }).result.then(function(selectedClusters, _controller) {
                         console.log("selected clusters [%j]", selectedClusters);
                         Clusters.deployAll({}, {
                                 clusters: selectedClusters
                             }).$promise
                             .then(_controller._loadClusters)
-                            .catch(function (r) {
+                            .catch(function(r) {
                                 self._handleError('An error occurred  while deploying clusters: ' + JSON.stringify(r));
                                 _controller._loadClusters();
                             });
-                    }, function () {
+                    }, function() {
                         console.log('Modal dismissed at: ' + new Date());
                     });
                 };
 
-                self.openContainerInfoModal = function (clusterId, containerId) {
+                self.openContainerInfoModal = function(clusterId, containerId) {
                     $uibModal.open({
                         ariaLabelledBy: 'modal-title',
                         ariaDescribedBy: 'modal-body',
                         templateUrl: 'js/app/clusters/containerInfoModal.html',
                         controllerAs: '$ctrl',
-                        controller: function ($uibModalInstance, container) {
+                        controller: function($uibModalInstance, container) {
                             delete container.realizations;
                             delete container.anomalies;
 
                             this.container = container;
-                            this.cancel = function () {
+                            this.cancel = function() {
                                 $uibModalInstance.dismiss('cancel');
                             };
-                            this.isObject = function (value) {
+                            this.isObject = function(value) {
                                 return angular.isObject(value)
                             }
                         },
@@ -159,45 +175,45 @@ angular
                                 containerId: containerId
                             })
                         }
-                    }).result.then(function (selectedClusters) {
+                    }).result.then(function(selectedClusters) {
                         console.log('Modal dismissed at: ' + new Date());
-                    }, function () {
+                    }, function() {
                         console.log('Modal dismissed at: ' + new Date());
                     });
                 };
 
-                self.openContainerAnomaliesModal = function (cluster, container) {
+                self.openContainerAnomaliesModal = function(cluster, container) {
                     $uibModal.open({
                         ariaLabelledBy: 'modal-title',
                         ariaDescribedBy: 'modal-body',
                         templateUrl: 'js/app/clusters/containerAnomaliesModal.html',
                         controllerAs: '$ctrl',
-                        controller: function ($uibModalInstance, anomalies) {
+                        controller: function($uibModalInstance, anomalies) {
                             this.anomalies = anomalies;
-                            this.cancel = function () {
+                            this.cancel = function() {
                                 $uibModalInstance.dismiss('cancel');
                             };
                         },
                         size: 'lg',
                         resolve: {
-                            anomalies: function () {
+                            anomalies: function() {
                                 return Environment.getAnomalies(cluster, container);
                             }
                         }
-                    }).result.then(function () {
+                    }).result.then(function() {
                         console.log('Modal dismissed at: ' + new Date());
-                    }, function () {
+                    }, function() {
                         console.log('Modal dismissed at: ' + new Date());
                     });
                 };
 
-                self.openContainerStatisticsModal = function (cluster, container) {
+                self.openContainerStatisticsModal = function(cluster, container) {
                     $uibModal.open({
                         ariaLabelledBy: 'modal-title',
                         ariaDescribedBy: 'modal-body',
                         templateUrl: 'js/app/clusters/containerStatisticsModal.html',
                         controllerAs: '$ctrl',
-                        controller: function ($uibModalInstance, cluster, Environment, container) {
+                        controller: function($uibModalInstance, cluster, Environment, container) {
                             this.name = cluster;
                             this.chartOptionsBase = {
                                 chart: {
@@ -223,27 +239,27 @@ angular
                                     yAxis: {
                                         axisLabelDistance: -10,
                                         showMaxMin: false,
-                                        tickFormat: function (d) {
+                                        tickFormat: function(d) {
                                             return d3.format('.02f')(d);
                                         }
                                     }
                                 }
                             };
 
-                            this.$onInit = function () {
+                            this.$onInit = function() {
                                 var self = this;
                                 this._buildChartsData();
-                                this.interval = setInterval(function () {
+                                this.interval = setInterval(function() {
                                     self._buildChartsData();
                                 }, 5000);
                             }
 
-                            this.cancel = function () {
+                            this.cancel = function() {
                                 clearInterval(this.interval);
                                 $uibModalInstance.dismiss('cancel');
                             };
 
-                            this._buildChartsData = function () {
+                            this._buildChartsData = function() {
                                 var statistics = Environment.getStatistics(cluster, container);
                                 this._defineCpuChart(statistics);
                                 this._defineNetworkChart(statistics);
@@ -251,7 +267,7 @@ angular
                                 this._defineMemoryChart(statistics);
                             }
 
-                            this._defineCpuChart = function (statistics) {
+                            this._defineCpuChart = function(statistics) {
                                 this.cpuOptions = angular.copy(this.chartOptionsBase);
                                 this.cpuOptions.chart.yDomain = [0, 100];
                                 this.cpuOptions.title = {
@@ -260,7 +276,7 @@ angular
                                 }
                                 this.cpuDataset = [{
                                     key: 'Usage',
-                                    values: statistics.map(function (obj, idx) {
+                                    values: statistics.map(function(obj, idx) {
                                         return {
                                             x: idx,
                                             y: (obj.cpu.current).toFixed(2)
@@ -268,7 +284,7 @@ angular
                                     })
                                 }, {
                                     key: 'Allocated',
-                                    values: statistics.map(function (obj, idx) {
+                                    values: statistics.map(function(obj, idx) {
                                         return {
                                             x: idx,
                                             y: obj.cpu.allocated ? (obj.cpu.allocated).toFixed(2) : 0
@@ -277,7 +293,7 @@ angular
                                 }];
                             };
 
-                            this._defineNetworkChart = function (statistics) {
+                            this._defineNetworkChart = function(statistics) {
                                 this.networkOptions = angular.copy(this.chartOptionsBase);
                                 this.networkOptions.title = {
                                     enable: true,
@@ -285,7 +301,7 @@ angular
                                 };
                                 this.networkDataset = [{
                                     key: 'Rx',
-                                    values: statistics.map(function (obj, idx) {
+                                    values: statistics.map(function(obj, idx) {
                                         return {
                                             x: idx,
                                             y: (obj.network.rx / 1000000).toFixed(2)
@@ -293,7 +309,7 @@ angular
                                     })
                                 }, {
                                     key: 'Tx',
-                                    values: statistics.map(function (obj, idx) {
+                                    values: statistics.map(function(obj, idx) {
                                         return {
                                             x: idx,
                                             y: (obj.network.tx / 1000000).toFixed(2)
@@ -302,7 +318,7 @@ angular
                                 }];
                             }
 
-                            this._defineBlkioChart = function (statistics) {
+                            this._defineBlkioChart = function(statistics) {
                                 this.blkioOptions = angular.copy(this.chartOptionsBase);
                                 this.blkioOptions.title = {
                                     enable: true,
@@ -310,7 +326,7 @@ angular
                                 };
                                 this.blkioDataset = [{
                                     key: 'Read',
-                                    values: statistics.map(function (obj, idx) {
+                                    values: statistics.map(function(obj, idx) {
                                         return {
                                             x: idx,
                                             y: (obj.blkio.blkRead / 1000000).toFixed(2)
@@ -318,7 +334,7 @@ angular
                                     })
                                 }, {
                                     key: 'Write',
-                                    values: statistics.map(function (obj, idx) {
+                                    values: statistics.map(function(obj, idx) {
                                         return {
                                             x: idx,
                                             y: (obj.blkio.blkWrite / 1000000).toFixed(2)
@@ -327,7 +343,7 @@ angular
                                 }];
                             };
 
-                            this._defineMemoryChart = function (statistics) {
+                            this._defineMemoryChart = function(statistics) {
                                 this.memoryOptions = angular.copy(this.chartOptionsBase);
                                 this.memoryOptions.title = {
                                     enable: true,
@@ -335,7 +351,7 @@ angular
                                 };
                                 this.memoryDataset = [{
                                     key: 'Current',
-                                    values: statistics.map(function (obj, idx) {
+                                    values: statistics.map(function(obj, idx) {
                                         return {
                                             x: idx,
                                             y: (obj.memory.current / 1000000000).toFixed(2)
@@ -343,7 +359,7 @@ angular
                                     })
                                 }, {
                                     key: 'Allocated',
-                                    values: statistics.map(function (obj, idx) {
+                                    values: statistics.map(function(obj, idx) {
                                         return {
                                             x: idx,
                                             y: (obj.memory.total / 1000000000).toFixed(2)
@@ -354,31 +370,31 @@ angular
                         },
                         size: '80-pct',
                         resolve: {
-                            Environment: function () {
+                            Environment: function() {
                                 return Environment;
                             },
-                            cluster: function () {
+                            cluster: function() {
                                 return cluster;
                             },
-                            container: function () {
+                            container: function() {
                                 return container;
                             }
                         }
-                    }).result.then(function (selectedClusters) {
+                    }).result.then(function(selectedClusters) {
                         console.log('Modal dismissed at: ' + new Date());
-                    }, function () {
+                    }, function() {
                         console.log('Modal dismissed at: ' + new Date());
                     });
                 }
 
-                self._loadClusters = function () {
+                self._loadClusters = function() {
                     Clusters.getAll()
-                        .$promise.then(function (clusters) {
+                        .$promise.then(function(clusters) {
                             self.clusters = Object.values(clusters);
                             self.loading = false;
                             self.serverError = false;
                             var tagPromises = [];
-                            Object.keys(self.clusters).forEach(function (clusterIndex) {
+                            Object.keys(self.clusters).forEach(function(clusterIndex) {
                                 var cluster = self.clusters[clusterIndex];
                                 if (cluster.containers) {
                                     let match = /^(?:.+?)\/(.*)/g.exec(cluster.containers[0].image);
@@ -387,27 +403,27 @@ angular
                                         Repositories.tags({
                                                 key: repo
                                             })
-                                            .$promise.then(function (tags) {
+                                            .$promise.then(function(tags) {
                                                 cluster.tags = tags;
-                                            }, function (e) {
+                                            }, function(e) {
                                                 console.log("unable to find tags for image ", e)
                                             });
                                     }
                                 }
                             });
                         })
-                        .catch(function (e) {
+                        .catch(function(e) {
                             console.log("error: ", e);
                             self.loading = false;
                             self.serverError = true;
                         });
                 }
 
-                self._handleError = function (msg) {
+                self._handleError = function(msg) {
                     Bus.emit('general.error', msg.data || msg);
                 }
 
-                self._updateClusterState = function (e, msg) {
+                self._updateClusterState = function(e, msg) {
                     if (!self.clusters) {
                         return;
                     }
@@ -426,7 +442,7 @@ angular
                     $scope.$apply();
                 }
 
-                self._registerListeners = function () {
+                self._registerListeners = function() {
                     Bus.listen('container.started', self._loadClusters);
                     Bus.listen('container.stopped', self._loadClusters);
                     Bus.listen('container.removed', self._loadClusters);

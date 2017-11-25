@@ -16,13 +16,13 @@
 
 'use strict';
 
-const Parser = require('./Parser');
+const Parser = require('./src/Parser');
 
 module.exports = class ComposeParser {
     constructor() {}
 
     parse(configurations, environment) {
-        let parser = new Parser();
-        return parser.parse(configurations, environment);
+        let parser = new Parser(configurations, environment);
+        return parser.parse();
     }
 };
