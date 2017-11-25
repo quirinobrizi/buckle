@@ -17,9 +17,10 @@
 'use strict'
 
 const util = require('util');
+const BuckleCompose = require('buckle-compose');
 
 const logger = require('../infrastructure/Logger');
-const BuckleCompose = require('buckle-compose');
+const containerHelper = require('../infrastructure/ContainerHelper');
 
 module.exports = class ContainerService {
 
@@ -84,15 +85,16 @@ module.exports = class ContainerService {
         if(configuration.volumes) {
             logger.info("creating volumes if needed");
         }
-        let order = this._defineDeploymentOrder(configuration);
-        return answer;
-    }
-
-    _defineDeploymentOrder(configuration) {
-        var answer = [];
-        if(configuration.dependencies && configuration.dependencies.length > 0) {
-            
+        let orderedContainers = containerHelper.defineDeploymentOrder(configuration);
+        for (var i = 0; i < orderedContainers.length; i++) {
+            let containerName = orderedContainers[i];
+            // TODO
+            var deployed = await this.containerRepository.deploy(containerName, container.tag || 'latest', true, -1);
+            answer.push({
+                name: container.name,
+                deployed: deployed
+            });
         }
-        return onswer;
+        return answer;
     }
 }

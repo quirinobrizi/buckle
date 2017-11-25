@@ -16,6 +16,9 @@
 
 'use strict'
 
+
+const logger = require('../Logger');
+
 module.exports = {
 
     /**
@@ -55,7 +58,7 @@ module.exports = {
         if (container.Image.startsWith("sha256")) {
             return container.Config ? container.Config.Image : 'unknown';
         }
-        if(container.Image.includes('@')) {
+        if (container.Image.includes('@')) {
             return container.Image.split('@')[0];
         }
         return container.Image
@@ -92,5 +95,39 @@ module.exports = {
             imageMatch = /(.+)@.*/g.exec(repoDigest);
         }
         return imageMatch[2] || 'unknown';
+    },
+
+    defineDeploymentOrder(configuration) {
+        var answer = [];
+        if (configuration.dependencies && configuration.dependencies.length > 0) {
+            for (let i = 0; i < configuration.dependencies.length; i++) {
+                let dependency = configuration.dependencies[i];
+                logger.info("inspecting dependency %s at position %s", dependency.name, i);
+                if (!dependency.order || dependency.order.length == 0) {
+                    if (!answer.includes(dependency.name)) {
+                        logger.info("add dependency %s", dependency.name);
+                        // does not have dependencies, can start as first
+                        answer.push(dependency.name);
+                    }
+                } else {
+                    // does have dependencies add the dependency and after the dependent
+                    for (let j = 0; j < dependency.order.length; j++) {
+                        let dep = dependency.order[j];
+                        if (!answer.includes(dep)) {
+                            logger.info("add dependency %s", dep);
+                            answer.push(dep);
+                        }
+                    }
+                    if (!answer.includes(dependency.name)) {
+                        logger.info("add dependency %s", dependency.name);
+                        answer.push(dependency.name);
+                    }
+                }
+            }
+        } else {
+            answer = Object.keys(configuration.containers);
+        }
+        logger.info("order evaluated as %s", answer);
+        return answer;
     }
 };
