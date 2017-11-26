@@ -55,10 +55,10 @@ module.exports = {
      * @return {string}              the container image
      */
     extractContainerImage: function(container) {
-        if (container.Image.startsWith("sha256")) {
+        if (container.Image && container.Image.startsWith("sha256")) {
             return container.Config ? container.Config.Image : 'unknown';
         }
-        if (container.Image.includes('@')) {
+        if (container.Image && container.Image.includes('@')) {
             return container.Image.split('@')[0];
         }
         return container.Image

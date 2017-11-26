@@ -104,7 +104,7 @@ module.exports = class ContainerRepository {
             logger.info("deploying container %s at version %s with cardinality %s", name, tag, cardinality);
             var containers = await this.dockerEngineClient.getContainersByName(name);
             var containerInfo = await this.dockerEngineClient.inspectContainer(containers[0].Id);
-            var image = /([^:]*):?(.*)$/g.exec(this._extractImage(containerInfo))[1];
+            var image = /([^:]*):?(.*)$/g.exec(containerHelper.extractContainerImage(containerInfo))[1];
             var config = new ScaleContainerAdaptor().adapt(containerInfo, image, tag, name);
             var startBeforeDelete = this._hasHostExposedPorts(containerInfo);
             if(cardinality > 0 && startBeforeDelete) {
@@ -146,10 +146,11 @@ module.exports = class ContainerRepository {
             let containerName = orderedContainers[i];
             logger.info("deploying contaner %s", containerName);
             try {
-                let config = configuration.containers[containerName];
+                let config = configuration.containers[containerName].configuration;
                 let targetCardinality = 1; // TODO read from compose if defined
-                let image = /([^:]*):?(.*)$/g.exec(this._extractImage(config))[1];
-                let tag = /([^:]*):?(.*)$/g.exec(this._extractImage(config))[2] || 'latest';
+                let match = /([^:]*):?(.*)$/g.exec(containerHelper.extractContainerImage(config));
+                let image = match[1];
+                let tag = match[2] || 'latest';
                 logger.info("pulling image %s", image);
                 let pull = await this.dockerEngineClient.pullImage(image, tag);
                 if (logger.debug) {
@@ -173,13 +174,6 @@ module.exports = class ContainerRepository {
             }
         }
         return answer;
-    }
-
-    _extractImage(container) {
-        if(container.Image.startsWith("sha256")) {
-            return container.Config.Image;
-        }
-        return container.Image
     }
 
     _hasHostExposedPorts(container) {

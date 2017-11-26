@@ -24,6 +24,7 @@ services:
           rate: 30
   microservice_1:
     restart: always
+    image: busybox
     environment:
       SPRING_CLOUD_CONFIG_ENABLED: "true"
       EUREKA_CLIENT_ENABLED: "true"

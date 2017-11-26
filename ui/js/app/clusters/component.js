@@ -89,6 +89,7 @@ angular
                 };
 
                 self.deployWithDockerCompose = function(composeFiles) {
+                    var self = this;
                     let read = function(file) {
                         let deferred = $q.defer();
                         let reader = new FileReader();
@@ -101,7 +102,7 @@ angular
                         $q.all(composeFiles.reduce(function(answer, file) { answer.push(read(file)); return answer; }, []))
                             .then(function(files) {
                                 Clusters.deployAll({}, { type: 'compose', clusters: files }).$promise
-                                    .then(_controller._loadClusters)
+                                    .then(self._loadClusters)
                                     .catch(function(r) {
                                         self._handleError('An error occurred  while deploying clusters: ' + JSON.stringify(r));
                                         self._loadClusters();
