@@ -42,7 +42,7 @@ module.exports = class ContainerService {
      */
     async deploy(type, containers) {
         if (type === 'compose') {
-            return this.containerRepository.deployFromComposeDefinition(containers);
+            return await this.containerRepository.deployFromComposeDefinition(containers);
         } else {
             var answer = [];
             for (let container of containers) {

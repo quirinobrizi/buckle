@@ -20,7 +20,7 @@ const util = require('util');
 
 const BuckleCompose = require('buckle-compose');
 const logger = require('../../infrastructure/Logger');
-const containerHelper = require('../infrastructure/ContainerHelper');
+const containerHelper = require('../../infrastructure/helper/ContainerHelper');
 const ScaleContainerAdaptor = require('../../infrastructure/adaptor/ScaleContainerAdaptor');
 
 module.exports = class ContainerRepository {
@@ -130,7 +130,7 @@ module.exports = class ContainerRepository {
         }
     }
 
-    async deployFromComposeDefinition(configuration) {
+    async deployFromComposeDefinition(configurations) {
         logger.info("parse compose configurations %s", util.inspect(configurations));
         var answer = [];
         let configuration = this.buckleCompose.parse(configurations, {});
@@ -144,6 +144,7 @@ module.exports = class ContainerRepository {
         let orderedContainers = containerHelper.defineDeploymentOrder(configuration);
         for (var i = 0; i < orderedContainers.length; i++) {
             let containerName = orderedContainers[i];
+            logger.info("deploying contaner %s", containerName);
             try {
                 let config = configuration.containers[containerName];
                 let targetCardinality = 1; // TODO read from compose if defined
@@ -164,6 +165,7 @@ module.exports = class ContainerRepository {
                     deployed: true
                 });
             } catch(e) {
+                logger.error("unable to deploy container %s, reason %s", containerName, e);
                 answer.push({
                     name: containerName,
                     deployed: false
