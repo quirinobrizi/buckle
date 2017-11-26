@@ -49,6 +49,7 @@ module.exports = class ClusterInterface {
          *          I.e. { type: "buckle", "clusters": [ { "tag": "1.3.4", "name": "mongodb" } ] }
          */
         router.post('/clusters', function(req, res) {
+            // TODO: QB translate clusters to model...
             let clusters = req.body.clusters || [];
             let type = req.body.type || "buckle";
             self.containerService.deploy(type, clusters).then(response => {
