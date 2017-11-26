@@ -16,17 +16,12 @@
 
 'use strict'
 
-const util = require('util');
-const BuckleCompose = require('buckle-compose');
-
 const logger = require('../infrastructure/Logger');
-const containerHelper = require('../infrastructure/ContainerHelper');
 
 module.exports = class ContainerService {
 
     constructor(containerRepository) {
         this.containerRepository = containerRepository;
-        this.buckleCompose = new BuckleCompose();
     }
 
     get(containerId) {
@@ -47,7 +42,7 @@ module.exports = class ContainerService {
      */
     async deploy(type, containers) {
         if (type === 'compose') {
-            return this._deployFromComposeDefinition(containers);
+            return this.containerRepository.deployFromComposeDefinition(containers);
         } else {
             var answer = [];
             for (let container of containers) {
@@ -72,29 +67,5 @@ module.exports = class ContainerService {
 
     deleteContainer(containerId) {
         return this.containerRepository.deleteContainer(containerId);
-    }
-
-    _deployFromComposeDefinition(configurations) {
-        logger.info("parse compose configurations %s", util.inspect(configurations));
-        var answer = [];
-        let configuration = this.buckleCompose.parse(configurations, {});
-        logger.debug("parsed compose definition %s", util.inspect(configuration));
-        if(configuration.network) {
-            logger.info("creating networks if needed");
-        }
-        if(configuration.volumes) {
-            logger.info("creating volumes if needed");
-        }
-        let orderedContainers = containerHelper.defineDeploymentOrder(configuration);
-        for (var i = 0; i < orderedContainers.length; i++) {
-            let containerName = orderedContainers[i];
-            // TODO
-            var deployed = await this.containerRepository.deploy(containerName, container.tag || 'latest', true, -1);
-            answer.push({
-                name: container.name,
-                deployed: deployed
-            });
-        }
-        return answer;
     }
 }

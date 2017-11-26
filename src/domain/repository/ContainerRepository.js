@@ -18,8 +18,10 @@
 
 const util = require('util');
 
-const ScaleContainerAdaptor = require('../../infrastructure/adaptor/ScaleContainerAdaptor');
+const BuckleCompose = require('buckle-compose');
 const logger = require('../../infrastructure/Logger');
+const containerHelper = require('../infrastructure/ContainerHelper');
+const ScaleContainerAdaptor = require('../../infrastructure/adaptor/ScaleContainerAdaptor');
 
 module.exports = class ContainerRepository {
 
@@ -28,6 +30,7 @@ module.exports = class ContainerRepository {
         this.containerTranslator = containerTranslator;
         // store augmented container information in memory...
         this.containers = [];
+        this.buckleCompose = new BuckleCompose();
     }
 
     /**
@@ -125,6 +128,49 @@ module.exports = class ContainerRepository {
             logger.error("unable to deploy requested container %s", e);
             return false;
         }
+    }
+
+    async deployFromComposeDefinition(configuration) {
+        logger.info("parse compose configurations %s", util.inspect(configurations));
+        var answer = [];
+        let configuration = this.buckleCompose.parse(configurations, {});
+        logger.debug("parsed compose definition %s", util.inspect(configuration));
+        if(configuration.network) {
+            logger.info("creating networks if needed");
+        }
+        if(configuration.volumes) {
+            logger.info("creating volumes if needed");
+        }
+        let orderedContainers = containerHelper.defineDeploymentOrder(configuration);
+        for (var i = 0; i < orderedContainers.length; i++) {
+            let containerName = orderedContainers[i];
+            try {
+                let config = configuration.containers[containerName];
+                let targetCardinality = 1; // TODO read from compose if defined
+                let image = /([^:]*):?(.*)$/g.exec(this._extractImage(config))[1];
+                let tag = /([^:]*):?(.*)$/g.exec(this._extractImage(config))[2] || 'latest';
+                logger.info("pulling image %s", image);
+                let pull = await this.dockerEngineClient.pullImage(image, tag);
+                if (logger.debug) {
+                    logger.debug("pull response %s", JSON.stringify(pull));
+                }
+                let scale = await this.dockerEngineClient.deployOrScaleContainer(config, containerName, image, targetCardinality, false, true);
+                if (logger.debug) {
+                    logger.debug("scale response %s", JSON.stringify(scale));
+                }
+                logger.info("container %s deployed at version %s with cardinality %s", name, tag, targetCardinality);
+                answer.push({
+                    name: containerName,
+                    deployed: true
+                });
+            } catch(e) {
+                answer.push({
+                    name: containerName,
+                    deployed: false
+                });
+            }
+        }
+        return answer;
     }
 
     _extractImage(container) {
